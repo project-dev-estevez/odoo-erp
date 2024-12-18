@@ -4,8 +4,7 @@ class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
 
-    first_name = fields.Char(string='Primer Nombre', required=True)
-    second_name = fields.Char(string='Segundo Nombre')
+    names = fields.Char(string='Nombres', required=True)
     last_name = fields.Char(string='Apellido Paterno', required=True)
     mother_last_name = fields.Char(string='Apellido Materno', required=True)
     direction_id = fields.Many2one('hr.direction', string='Dirección')
@@ -29,25 +28,23 @@ class HrEmployee(models.Model):
 
     name = fields.Char(string='Nombre Completo', compute='_compute_full_name', store=True, readonly=True)
 
-    @api.depends('first_name', 'second_name', 'last_name', 'mother_last_name')
+    @api.depends('names', 'last_name', 'mother_last_name')
     def _compute_full_name(self):
         for record in self:
-            names = f"{record.first_name} {record.second_name or ''}".strip()
-            record.name = f"{names} {record.last_name} {record.mother_last_name}"
+            record.name = f"{record.names} {record.last_name} {record.mother_last_name}"
 
-    @api.onchange('first_name', 'second_name', 'last_name', 'mother_last_name')
+    @api.onchange('names', 'last_name', 'mother_last_name')
     def _onchange_full_name(self):
         for record in self:
-            first_name = record.first_name or ''
-            second_name = record.second_name or ''
+            names = record.names or ''
             last_name = record.last_name or ''
             mother_last_name = record.mother_last_name or ''
-            record.name = f"{first_name} {second_name} {last_name} {mother_last_name}".strip()
+            record.name = f"{names} {last_name} {mother_last_name}".strip()
 
     @api.model
     def create(self, vals):
-        if 'first_name' in vals or 'second_name' in vals or 'last_name' in vals or 'mother_last_name' in vals:
-            names = f"{vals.get('first_name', '')} {vals.get('second_name', '')}".strip()
+        if 'names' in vals or 'last_name' in vals or 'mother_last_name' in vals:
+            names = vals.get('names', '').strip()
             vals['name'] = f"{names} {vals.get('last_name', '')} {vals.get('mother_last_name', '')}".strip()
         employee = super(HrEmployee, self).create(vals)
         if 'direction_id' in vals and vals['direction_id']:
@@ -56,8 +53,8 @@ class HrEmployee(models.Model):
         return employee
 
     def write(self, vals):
-        if 'first_name' in vals or 'second_name' in vals or 'last_name' in vals or 'mother_last_name' in vals:
-            names = f"{vals.get('first_name', self.first_name)} {vals.get('second_name', self.second_name)}".strip()
+        if 'names' in vals or 'last_name' in vals or 'mother_last_name' in vals:
+            names = vals.get('names', self.names).strip()
             vals['name'] = f"{names} {vals.get('last_name', self.last_name)} {vals.get('mother_last_name', self.mother_last_name)}".strip()
         for record in self:
             if 'direction_id' in vals:
