@@ -25,9 +25,9 @@
                 <xpath expr="//group/group[field[@name='department_id']]" position="replace">
                     <group>
                         <field name="company_id" string="Compañia" readonly="1" invisible="not direction_id"/>
-                        <field name="direction_id"/>
-                        <field name="department_id" domain="[('direction_id', '=', direction_id)]" invisible="not direction_id"/>
-                        <field name="area_id" domain="[('department_id', '=', department_id)]" invisible="not department_id"/>
+                        <field name="direction_id" options="{'no_create': True}"/>
+                        <field name="department_id" domain="[('direction_id', '=', direction_id)]" invisible="not direction_id" options="{'no_create': True}"/>
+                        <field name="area_id" domain="[('department_id', '=', department_id)]" invisible="not department_id" options="{'no_create': True}"/>
                         <field name="job_id"/>
                         <field name="parent_id" string="Jefe Inmediato"/>
                     </group>
@@ -180,6 +180,12 @@
                                 <field name="children"/>
                             </group>
                         </group>
+                    </page>
+                </xpath>
+
+                <!-- Nueva página de Documentos -->
+                <xpath expr="//notebook/page[@name='personal_information']" position="after">
+                    <page name="documents" string="Documentos">
                     </page>
                 </xpath>
 

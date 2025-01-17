@@ -15,10 +15,10 @@
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Human Resources',
-    'version': '0.1',
+    'version': '0.2',
 
     # any module necessary for this one to work correctly
-    'depends': ['hr'],
+    'depends': ['hr', 'hr_contract'],
 
     # always loaded
     'data': [
@@ -28,7 +28,9 @@
         'views/hr_area_views.xml',
         'views/hr_employee_menu.xml',
         'views/hr_employee_views.xml',
+        'views/hr_contract_views.xml',
     ],
+    'pre_init_hook': 'migrate',
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',
