@@ -1,0 +1,79 @@
+<odoo>
+    <data>
+
+        <record id="action_hr_area" model="ir.actions.act_window">
+            <field name="name">Áreas</field>
+            <field name="res_model">hr.area</field>
+            <field name="view_mode">kanban,list,form</field>
+        </record>
+
+        <record id="view_hr_area_form" model="ir.ui.view">
+            <field name="name">hr.area.form</field>
+            <field name="model">hr.area</field>
+            <field name="arch" type="xml">
+                <form string="Area">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="coordinator_id"/>
+                            <field name="department_id" options="{'no_create': True}"/>                            
+                            <field name="direction_id"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="employee_ids"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_hr_area_list" model="ir.ui.view">
+            <field name="name">hr.area.list</field>
+            <field name="model">hr.area</field>
+            <field name="arch" type="xml">    
+                <list string="Areas">
+                    <field name="name"/>
+                    <field name="department_id"/>
+                    <field name="company_id" readonly="1"/>
+                    <field name="direction_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_hr_area_kanban" model="ir.ui.view">
+            <field name="name">hr.area.kanban</field>
+            <field name="model">hr.area</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="company_id"/>
+                    <field name="coordinator_id"/>
+                    <templates>
+                        <t t-name="card">
+                            <a type="open">
+                                <field name="name" class="fw-bold fs-4 d-bolck ms-2"/>
+                            </a>
+                            <field name="coordinator_id" widget="many2one_avatar_employee" options="{'display_avatar_name': True}" readonly="1" class="text-muted ms-2"/>
+                            <div class="small mt-1 ms-2" groups="base.group_multi_company">
+                                <i class="fa fa-building-o" role="img" aria-label="Company" title="Company"/>
+                                <field name="company_id" class="ms-1"/>
+                            </div>
+                            <div class="row g-0 mt-3 mb-2 ms-2">
+                                <div class="col-6">
+                                    <button type="button" class=" btn btn-primary" name="total_employees_button">
+                                        <field name="total_employees"/>
+                                        Empleados
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+
+

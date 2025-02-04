@@ -1,0 +1,82 @@
+<odoo>
+    <data>
+        <record id="action_hr_direction" model="ir.actions.act_window">
+            <field name="name">Direcciones</field>
+            <field name="res_model">hr.direction</field>
+            <field name="view_mode">kanban,list,form</field>
+        </record>
+
+
+        <record id="view_hr_direction_form" model="ir.ui.view">
+            <field name="name">hr.direction.form</field>
+            <field name="model">hr.direction</field>
+            <field name="arch" type="xml">
+                <form string="Direction">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="director_id" options="{'no_create': True}"/>
+                            <field name="parent_id" options="{'no_create': True}"/>
+                            <field name="company_id"/>
+                        </group>
+                        <notebook>
+                            <page string="Departamentos">
+                                <field name="department_ids">
+                                    <list string="Departamentos">
+                                        <field name="name"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_hr_direction_list" model="ir.ui.view">
+            <field name="name">hr.direction.list</field>
+            <field name="model">hr.direction</field>
+            <field name="arch" type="xml">
+                <list string="Directions">
+                    <field name="name"/>
+                    <field name="director_id"/>
+                    <field name="parent_id"/>
+                    <field name="company_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_hr_direction_kanban" model="ir.ui.view">
+            <field name="name">hr.direction.kanban</field>
+            <field name="model">hr.direction</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="director_id"/>
+                    <field name="company_id"/>
+                    <templates>
+                        <t t-name="card">
+                            <a type="open">
+                                <field name="name" class="fw-bold fs-4 d-bolck ms-2"/>
+                            </a>
+                            <field name="director_id" widget="many2one_avatar_employee" options="{'display_avatar_name': True}" readonly="1" class="text-muted ms-2"/>
+                            <div class="small mt-1 ms-2" groups="base.group_multi_company">
+                                <i class="fa fa-building-o" role="img" aria-label="Company" title="Company"/>
+                                <field name="company_id" class="ms-1"/>
+                            </div>
+                            <div class="row g-0 mt-3 mb-2 ms-2">
+                                <div class="col-6">
+                                    <button class="btn btn-primary">
+                                        <field name="total_departments"/>
+                                        Departamentos
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+        
+    </data>
+</odoo>
