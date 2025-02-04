@@ -1,1 +1,0 @@
-[![EXPLORING_ODOO](https://img.youtube.com/vi/hmBIX6U9zhQ/0.jpg)](https://youtu.be/hmBIX6U9zhQ)
