@@ -6,3 +6,5 @@ from . import hr_applicant
 from . import hr_candidate
 from . import hr_requisition_software
 from . import hr_recruitment_degree
+from . import hr_applicant_document
+from . import ir_attachment
