@@ -15,7 +15,7 @@
         'views/purchase_acquisition_views.xml',
         'views/purchase_menu.xml',
         'views/res_partner_industry_data.xml',      
-        'views/res_partner_views.xml'
+        'views/res_partner_views.xml',
         'views/purchase_customization.xml',
         
     ],
