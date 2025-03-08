@@ -1,11 +1,11 @@
-<!--odoo>
+<odoo>
     <data>
         <record id="view_partner_property_form_inherit" model="ir.ui.view">
             <field name="name">res.partner.property.form.inherit</field>
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="account.view_partner_property_form"/>
             <field name="arch" type="xml">
-                Reemplazar la página 'accounting'
+                <!-- Reemplazar la página 'accounting' -->
                 <xpath expr="//page[@name='accounting']" position="replace">
                     <page string="Cuenta bancaria" name="accounting" invisible="not is_company and parent_id" groups="account.group_account_invoice,account.group_account_readonly">
                         <sheet>
@@ -66,4 +66,4 @@
             </field>
         </record>
     </data>
-odoo-->
+</odoo>
