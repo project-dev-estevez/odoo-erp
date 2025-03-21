@@ -17,8 +17,8 @@
                                         <field name="sequence" widget="handle"/>
                                         <field name="acc_number"/>                                        
                                         <field name="bank_id"/>  
-                                        <field name="clabe"/> 
-                                        <field name="reference"/>                                      
+                                   
+                                                                        
                                         <field name="allow_out_payment"/>
                                         <field name="acc_holder_name"/>
                                     </list>
@@ -60,8 +60,7 @@
             <field name="inherit_id" ref="base.view_partner_bank_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='acc_number']" position="after">
-                    <field name="clabe"/>    
-                    <field name="reference"/>        
+                           
                 </xpath>
             </field>
         </record>
