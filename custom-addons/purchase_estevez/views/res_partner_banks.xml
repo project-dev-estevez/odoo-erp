@@ -33,7 +33,7 @@
                                 
                                 <field name="currency_id" invisible="1"/>
                                 <field name="property_account_receivable_id" required="is_coa_installed"/>
-                                <field name="property_account_payable_id" required="is_coa_installed"/>
+                                
                             </group>
                             <group string="Credit Limits" name="credit_limits" groups="account.group_account_invoice,account.group_account_readonly" invisible="not show_credit_limit">
                                 <field name="credit"/>
