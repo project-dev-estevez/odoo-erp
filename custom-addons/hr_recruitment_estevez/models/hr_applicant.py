@@ -1,5 +1,6 @@
 from odoo import models, api, fields, _
 from odoo.exceptions import UserError
+from datetime import timedelta, date
 import logging
 import re
 
@@ -8,15 +9,17 @@ _logger = logging.getLogger(__name__)
 class HrApplicant(models.Model):
     _inherit = 'hr.applicant'
 
+    is_examen_medico = fields.Boolean(compute="_compute_is_examen_medico")
+
     # *********Formulario de historia clinica *********
     # Ficha de Identificación
     interrogation_type = fields.Selection([('direct', 'Directo'), ('indirect', 'Indirecto')], string="Tipo de Interrogatorio")
     patient_name = fields.Char(string="Nombre del Paciente", compute="_compute_patient_name")
     gender = fields.Selection([('male', 'Masculino'), ('female', 'Femenino')], string="Género")
     birth_date = fields.Date(string="Fecha de Nacimiento")
-    age = fields.Integer(string="Edad")
+    age = fields.Char(string="Edad", compute="_compute_age", readonly=True)
     job_position = fields.Char(string="Puesto de Trabajo", compute="_compute_job_position")
-    education = fields.Char(string="Escolaridad")
+    degree_id = fields.Many2one('hr.recruitment.degree', string="Escolaridad")
     address = fields.Text(string="Dirección")
     phone = fields.Char(string="Teléfono", compute="_compute_phone")
 
@@ -24,13 +27,21 @@ class HrApplicant(models.Model):
     family_medical_history = fields.Text(string="Antecedentes Heredo Familiares")
 
     # Antecedentes Personales No Patológicos
-    place_of_origin = fields.Char(string="Lugar de Origen y Residencia")
-    marital_status = fields.Selection([('single', 'Soltero'), ('married', 'Casado')], string="Estado Civil")
+    place_of_origin = fields.Char(string="Lugar de Origen")
+    place_of_residence = fields.Char(string="Lugar de Residencia")
+    marital_status = fields.Selection([
+        ('single', 'Soltero(a)'),
+        ('married', 'Casado(a)'),
+        ('cohabitant', 'En Concubinato'),
+        ('widower', 'Viudo(a)'),
+        ('divorced', 'Divorciado(a)')
+    ], string='Estado Civil', tracking=True)
     religion = fields.Char(string="Religión")
     housing_type = fields.Selection([('own', 'Propia'), ('rented', 'Rentada')], string="Tipo de Vivienda")
     construction_material = fields.Selection([('durable', 'Durable'), ('non_durable', 'No Durable')], string="Material de Construcción")
     housing_services = fields.Char(string="Servicios de Vivienda")
-    weekly_clothing_change = fields.Integer(string="Cambio de Ropa Semanal")
+    weekly_clothing_change = fields.Char(string="Cambio de Ropa Semanal")
+    occupations = fields.Text(string="Oficios Desempeñados")
     daily_teeth_brushing = fields.Integer(string="Cepillado de Dientes Diario")
     zoonosis = fields.Selection([('negative', 'Negativo'), ('positive', 'Positivo')], string="Zoonosis")
     overcrowding = fields.Selection([('negative', 'Negativo'), ('positive', 'Positivo')], string="Hacinamiento")
@@ -39,47 +50,124 @@ class HrApplicant(models.Model):
     donor = fields.Boolean(string="Donador")
 
     # Antecedentes Personales Patológicos
-    previous_surgeries = fields.Char(string="Cirugías Previas")
-    traumas = fields.Char(string="Traumas")
-    transfusions = fields.Char(string="Transfusiones")
-    allergies = fields.Char(string="Alergias")
-    chronic_diseases = fields.Char(string="Enfermedades Crónicas")
-    childhood_diseases = fields.Char(string="Enfermedades de la Infancia")
-    smoking = fields.Selection([('yes', 'Sí'), ('no', 'No')], string="Tabaquismo")
-    alcoholism = fields.Selection([('yes', 'Sí'), ('no', 'No')], string="Alcoholismo")
-    drug_addiction = fields.Char(string="Adicción a Drogas")
-
     # Esquema de Vacunación
-    complete_schedule = fields.Selection([('yes', 'Sí'), ('no', 'No')], string="Esquema Completo")
+    complete_schedule = fields.Selection([('yes', 'Sí'), ('no', 'No')], string="Esquema Completo Vacunación")
+    comments = fields.Text(string="Comentarios")
     no_vaccination_card = fields.Boolean(string="Sin Cartilla de Vacunación")
     last_vaccine = fields.Date(string="Última Vacuna")
+    previous_surgeries = fields.Char(string="Quirúrgicos")
+    traumas = fields.Char(string="Traumáticos")
+    transfusions = fields.Char(string="Transfusionales")
+    allergies = fields.Char(string="Alérgicos")
+    chronic_diseases = fields.Char(string="Crónico-degenerativos")
+    childhood_diseases = fields.Char(string="Enfermedades de la Infancia")
+    smoking = fields.Selection([('yes', 'Sí'), ('no', 'No'), ('social', 'Social')], string="Tabaquismo")
+    alcoholism = fields.Selection([('yes', 'Sí'), ('no', 'No'), ('social', 'Social')], string="Alcoholismo")
+    drug_addiction = fields.Selection([('yes', 'Sí'), ('no', 'No'), ('social', 'Social')], string="Toxicomanías")
 
-    # Examen Físico
-    heart_rate = fields.Integer(string="Frecuencia Cardíaca (LPM)")
-    respiratory_rate = fields.Integer(string="Frecuencia Respiratoria (RPM)")
+    # Antecedentes Gineco-Obstétricos
+    menarche = fields.Char(string="Menarca")
+    thelarche = fields.Char(string="Telarca")
+    rhythm = fields.Char(string="Ritmo")
+    gpca = fields.Char(string="GPCA")
+    breastfeeding_history = fields.Selection([('yes', 'Sí'), ('no', 'No')], string="Antecedente de Lactancia Materna")
+    ivsa = fields.Char(string="IVSA")
+    nps = fields.Char(string="NPS")
+    mpf = fields.Char(string="MPF")
+
+    # Padecimiento Actual
+    current_condition = fields.Text(string="Padecimiento Actual")
+
+    # Interrogatorio por aparatos y sistemas
+    cardiovascular = fields.Char(string="Cardiovascular")
+    respiratory = fields.Char(string="Respiratorio")
+    gastrointestinal = fields.Char(string="Gastrointestinal")
+    genitourinary = fields.Char(string="Genitourinario")
+    endocrine = fields.Char(string="Endocrino")
+    nervous = fields.Char(string="Nervioso")
+    musculoskeletal = fields.Char(string="Músculo-Esquelético")
+    skin_mucous = fields.Char(string="Piel y Mucosas")
+
+    # Signos Vitales
+    heart_rate = fields.Integer(string="Frecuencia Cardiaca (Lpm)")
+    respiratory_rate = fields.Integer(string="Frecuencia Respiratoria (Rpm)")
     temperature = fields.Float(string="Temperatura (°C)")
-    blood_pressure = fields.Char(string="Presión Arterial (mmHg)")
-    oxygen_saturation = fields.Float(string="Saturación de Oxígeno (%)")
+    blood_pressure = fields.Char(string="Tensión Arterial (mmHg)")
+    oxygen_saturation = fields.Float(string="Saturación O2 (%)")
     weight = fields.Float(string="Peso (Kg)")
-    height = fields.Float(string="Estatura (Cm)")
-    bmi = fields.Float(string="IMC")
+    height = fields.Float(string="Talla (Cm)")
+    bmi = fields.Float(string="IMC", compute="_compute_bmi", readonly=True)
 
-    # Diagnóstico y Tratamiento
-    clinical_diagnosis = fields.Text(string="Diagnóstico Clínico")
-    treatment_instructions = fields.Text(string="Tratamiento e Instrucciones")
-    next_appointment = fields.Date(string="Próxima Cita")
-    prognosis = fields.Char(string="Pronóstico")
+    # Exploración Física
+    head_neck = fields.Char(string="Cabeza y Cuello")
+    chest = fields.Char(string="Tórax")
+    abdomen = fields.Char(string="Abdomen")
+    extremities = fields.Char(string="Extremidades")
+    neurological = fields.Char(string="Neurológico")
+    skin = fields.Char(string="Piel")
 
-    # Firmas
-    doctor_signature = fields.Binary(string="Firma del Doctor")
-    professional_license = fields.Char(string="Cédula Profesional", compute="_compute_professional_license")
-    worker_signature = fields.Binary(string="Firma del Trabajador")
+    # Resultados Previos y Actuales de Laboratorio, Gabinete y Otros
+    laboratory_results = fields.Text(string="Resultados")
+
+    # Diagnóstico o Problemas Clínicos
+    diagnosis = fields.Text(string="Diagnóstico")
+
+    # Terapéutica Empleada y Resultados Previos
+    previous_treatment = fields.Text(string="Terapéutica Empleada y Resultados Previos")
+
+    # Tratamiento e Indicaciones
+    treatment_recommendations = fields.Text(
+        string="Tratamiento e Indicaciones",
+        compute="_compute_treatment_recommendations",
+        readonly=True,
+        store=False
+    )
+
+    # Próxima Cita
+    next_appointment = fields.Text(string="Próxima Cita")
+
+    # Pronóstico
+    prognosis = fields.Text(string="Pronóstico")
+
+    aptitude_state = fields.Selection([
+        ('apto', 'Apto'),
+        ('no_apto', 'No Apto'),
+        ('apto_condicionado', 'Apto Condicionado')
+    ], string="Estado de Aptitud", default='apto')
 
     documents_count = fields.Integer(
         'Documents Count', compute="_compute_applicant_documents")
     
-
     # Computed fields
+    @api.depends('weight', 'height')
+    def _compute_bmi(self):
+        for record in self:
+            if record.weight and record.height:
+                height_in_meters = record.height / 100
+                record.bmi = round(record.weight / (height_in_meters ** 2), 1)
+            else:
+                record.bmi = 0
+
+    @api.depends()
+    def _compute_treatment_recommendations(self):
+        for record in self:
+            record.treatment_recommendations = _(
+                "Dieta rica en verduras, baja en carbohidratos, tomar abundante líquido, moderar el consumo de carnes rojas, embutidos y lácteos. "
+                "Evitar cambios bruscos de temperatura, realizar actividad física diariamente (caminata ligera a tolerancia), se promueve la salud bucal, "
+                "hábitos higiénicos generales, evitar accidentes. Se consulta guía de práctica clínica, se realizan acciones del servicio de promoción y "
+                "prevención para una mejor salud."
+            )
+
+    @api.depends('birth_date')
+    def _compute_age(self):
+        for record in self:
+            if record.birth_date:
+                today = date.today()
+                age = today.year - record.birth_date.year - ((today.month, today.day) < (record.birth_date.month, record.birth_date.day))
+                record.age = f"{age} años"
+            else:
+                record.age = "0 años"
+
     def _compute_work_center(self):
         for record in self:
             record.work_center = record.company_id.name
@@ -148,9 +236,57 @@ class HrApplicant(models.Model):
             else:
                 raise UserError("The applicant does not have a phone number.")
             
-    def action_save(self):
-        # Save the record
-        self.ensure_one()
-        self.write(self._context.get('params', {}))
-        # Generate the PDF report
-        return self.env.ref('hr_recruitment_estevez.action_report_hr_applicant_document').report_action(self)
+
+    def check_stage_time_to_bocked(self, stage_name, time_delta):
+        # Buscar el stage por nombre, sin sensibilidad a mayúsculas/minúsculas
+        stage = self.env['hr.recruitment.stage'].search([('name', 'ilike', stage_name)], limit=1)
+        if not stage:
+            _logger.error(f"Stage '{stage_name}' not found")
+            return
+
+        # Calcular el tiempo límite
+        time_limit = fields.Datetime.now() - timedelta(hours=time_delta)
+
+        applicants = self.search([
+            ('stage_id', '=', stage.id),
+            ('kanban_state', '!=', 'blocked'),
+            ('date_last_stage_update', '<=', time_limit)
+        ])
+
+        _logger.info(f"Found {len(applicants)} applicants to block in stage {stage_name}")
+
+        for applicant in applicants:
+            # Verificar si el aplicante tiene actividades programadas para una fecha y hora posterior a la fecha y hora actual
+            future_activities = self.env['mail.activity'].search([
+                ('res_model', '=', 'hr.applicant'),
+                ('res_id', '=', applicant.id),
+                ('date_deadline', '>', fields.Datetime.now())
+            ])
+            
+            if future_activities:
+                _logger.info(f"Applicant {applicant.id} has future activities and will not be blocked")
+                continue
+
+            applicant.write({
+                'kanban_state': 'blocked'
+            })
+            # Notificar al reclutador
+            applicant.message_post(
+                body=f"¡Ups! El candidato {applicant.partner_name} sigue en espera. Quizás sea un buen momento para revisar su estatus. 😉",
+                subtype_id=self.env.ref('mail.mt_comment').id
+            )
+            _logger.info(f"Applicant {applicant.id} blocked and notified")
+
+    def write(self, vals):
+        if 'stage_id' in vals and any(applicant.kanban_state == 'blocked' for applicant in self):
+            raise UserError(_("El postulante está bloqueado y no puede avanzar en el proceso hasta que el bloqueo sea resuelto o eliminado manualmente por un usuario autorizado."))
+        return super(HrApplicant, self).write(vals)
+
+    @api.depends('stage_id.name')
+    def _compute_is_examen_medico(self):
+        for record in self:
+            stage_name = record.stage_id.name
+            if stage_name:
+                record.is_examen_medico = stage_name == 'Examen Médico'
+            else:
+                record.is_examen_medico = False

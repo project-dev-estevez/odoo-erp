@@ -14,44 +14,16 @@ class PurchaseAcquisition(models.Model):
     company_id = fields.Many2one('res.company', string="Empresa", related='requestor_id.company_id', readonly=True, store=False)
     direction_id = fields.Many2one('hr.direction', string="Dirección", related='requestor_id.employee_id.direction_id', readonly=True, store=False)
     department_id = fields.Many2one('hr.department', string="Departamento", related='requestor_id.employee_id.department_id', readonly=True, store=False)
-    job_id = fields.Many2one('hr.job', string="Puesto Solicitante", related='requestor_id.employee_id.job_id', readonly=True, store=False)       
-
-    medida = fields.Selection(
-        selection=[            
-            ('pieza', 'Pieza'),
-            ('juego', 'Juego'),
-            ('kilogramo', 'Kilogramo'),
-            ('litro', 'Litro'),
-            ('metro', 'Metro'),
-            ('otro', 'Otro'),
-            ('caja', 'Caja'),
-            ('centimetro', 'Centimetro'),
-            ('horas', 'Horas'),
-            ('kit', 'Kit'),
-            ('kilometro', 'Kilometro'),
-            ('lote', 'Lote'),
-            ('metro_cuadrado','Metro cuadrado'),
-            ('metro_cubico', 'Metro cubico'),
-            ('metro_lineal', 'Metro lineal'),
-            ('rollo', 'Rollo'),
-            ('servicio', 'Servicio'),
-            ('tonelada', 'Tonelada'),
-            ('bolsa', 'Bolsa'),
-            ('cubeta', 'Cubeta'),
-            ('paquete', 'Paquete'),
-            ('galon', 'Galon'),
-            ('bidon', 'Bidon'),
-            ('pares', 'Pares'),
-            ('no_aplica', 'No aplica'),
-        ],
-        string='Unidad', required=True)
-
-    #Adquisiciones
-
+    job_id = fields.Many2one('hr.job', string="Puesto Solicitante", related='requestor_id.employee_id.job_id', readonly=True, store=False)      
+    acquisition_id = fields.Many2one('purchase.acquisition', string='Acquisition') 
+    order_line_ids = fields.One2many('purchase.acquisition.line', 'acquisition_id', string='Order Lines')      
+    proveedor_id = fields.Many2one('res.partner', string="Proveedor", required=True, domain="[('supplier_rank', '>', 0)]")
     fecha_limite_entrega = fields.Date(string='Fecha límite de entrega', required=True)    
     tipo = fields.Char(string='Tipo', required=True, default='Producto')
     proyecto = fields.Char(string='Proyecto', required=True)
     segmento = fields.Char(string='Segmento', required=True)
+    product_id = fields.Many2one('product.product', string='Product', required=True)
+    product_qty = fields.Float(string='Quantity', required=True, default=1.0)
     prioridad = fields.Selection(
         selection=[            
             ('urgente', 'Urgente'),
@@ -61,18 +33,65 @@ class PurchaseAcquisition(models.Model):
         string='Prioridad', required=True)                   
     almacen = fields.Char(string='Almacen', required=True)
     sugerencia = fields.Char(string='Sugerencia de proveedor', required=True)
-    comentarios = fields.Char(string='Comentarios', required=True)
-    nombre_producto = fields.Many2one('product.product', string='Nombre del producto', required=True)
-    cantidad = fields.Integer(string='Cantidad', required=True)    
-    descripcion = fields.Char(string='Descripcion', required=True)
-    especificaciones = fields.Char(string='Especificaciones', required=True)
+    comentarios = fields.Char(string='Comentarios', required=True)          
+    requisition_number = fields.Char(string="Número de requisición")
 
     state = fields.Selection([
         ('to_approve', 'Pendiente Aprobación'),
         ('first_approval', 'En Curso'),
         ('rejected', 'Rechazado'),
         ('approved', 'Aprobado'),
-    ], string="Estado", default='to_approve')
+    ], string="Estado", default='to_approve')    
+
+    def action_purchase(self):
+        self.ensure_one()
+        order_lines = []
+        for line in self.order_line_ids:
+            order_lines.append((0, 0, {
+                'product_id': line.product_id.id,  
+                'product_qty': line.product_qty,  
+                'product_uom': line.product_uom.id,  
+                'price_unit': line.price_unit,    
+            }))
+
+        purchase_order = self.env['purchase.order'].create({
+            'partner_id': self.proveedor_id.id,  
+            'origin': self.requisition_number,   
+            'order_line': order_lines,           
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'purchase.order',
+            'res_id': purchase_order.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_quotation(self):
+        self.ensure_one()                            
+        order_lines = []
+        for line in self.order_line_ids:
+            order_lines.append((0, 0, {
+                'product_id': line.product_id.id,
+                'product_qty': line.product_qty,
+                'product_uom': line.product_uom.id,
+                'price_unit': line.price_unit,
+            }))
+        
+        quotation = self.env['purchase.order'].create({
+            'partner_id': self.requestor_id.partner_id.id,
+            'origin': self.requisition_number,
+            'order_line': order_lines,
+        })    
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Cotización',
+            'res_model': 'purchase.order',
+            'res_id': quotation.id,
+            'view_mode': 'form',  
+            'target': 'current', 
+        }  
 
     def action_approve(self):
         self.state = 'first_approval'
@@ -192,8 +211,6 @@ class PurchaseAcquisition(models.Model):
         #Metodo para el bootn de Guardar
         self.ensure_one()
         return {
-            "type": "ir.actions.act_window_close",  # Cierra la ventana de este formulario
+            "type": "ir.actions.act_window_close",
         }
-
     
-

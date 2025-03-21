@@ -5,7 +5,6 @@
             <field name="res_model">purchase.acquisition</field>
             <field name="view_mode">kanban,list,form</field>
         </record>
-
         <record id="view_purchas_acquisition_form" model="ir.ui.view">
             <field name="name">purchase.acquisition.form</field>
             <field name="model">purchase.acquisition</field>
@@ -15,6 +14,9 @@
                         <button name="action_approve" string="Aprobar" type="object" class="btn-primary" invisible="state in ('rejected', 'first_approval', 'second_approval', 'approved') or requestor_id == uid"/>
                         <button name="action_confirm_approve" string="Confirmar Aprobación" type="object" class="btn-primary" invisible="state in ('to_approve', 'rejected', 'approved') or requestor_id == uid"/>
                         <button name="action_reject" string="Rechazar" type="object" invisible="state in ('rejected', 'approved') or requestor_id == uid"/>
+                        <!-- Nuevos botones que aparecen cuando state es 'approved' -->
+                        <button name="action_quotation" string="Iniciar cotización" type="object" class="btn-primary" invisible="state != 'approved'"/>
+                        <button name="action_purchase" string="Iniciar orden de compra" type="object" class="btn-primary" invisible="state != 'approved'"/>
                         <field name="state" 
                            widget="statusbar" 
                            decoration-muted="state == 'to_approve'" 
@@ -29,6 +31,7 @@
                             <group>                                               
                                 <field name="requestor_id"/>
                                 <field name="company_id"/>
+                                <field name="proveedor_id"/>
                             </group>
                             <group>
                                 <field name="direction_id"/>
@@ -36,35 +39,38 @@
                                 <field name="job_id"/>
                             </group>
                         </group>                        
-                            <group string="Especificaciones">
-                                <group>                        
-                                    <field name="fecha_limite_entrega"/>                            
-                                    <field name="tipo" default="'Producto'"/>
-                                    <field name="proyecto"/>
-                                    <field name="segmento"/>
-                                    <field name="prioridad" placeholder="Selecciona una opción"/>
-                                    <field name="almacen"/>
-                                    <field name="sugerencia"/>
-                                    <field name="comentarios"/>                                                           
-                                </group>
-                            </group>  
-                            <group>
-                                <group string="Especificaciones del producto">
-                                    <field name="nombre_producto"/>                                    
-                                    <field name="cantidad"/>
-                                    <field name="medida" placeholder="Selecciona una opción"/>
-                                    <field name="descripcion"/>
-                                    <field name="especificaciones"/>
-                                </group>                                
-                            </group>                      
-                        <div class="text-center">
-                            <button type="object" name="save_dat" string="Enviar solicitud" class="btn btn-primary"/>                    
-                        </div>
+                        <group string="Especificaciones">
+                            <group>                        
+                                <field name="fecha_limite_entrega"/>                            
+                                <field name="tipo" default="'Producto'"/>
+                                <field name="proyecto"/>
+                                <field name="segmento"/>
+                                <field name="prioridad" placeholder="Selecciona una opción"/>
+                                <field name="almacen"/>
+                                <field name="sugerencia"/>
+                                <field name="comentarios"/>                                                           
+                            </group>
+                        </group>  
+                        <group>
+                            <group string="Especificaciones del producto">                                                                    
+                            </group>                                
+                        </group>                               
+                        <field name="order_line_ids">
+                            <list string="Productos" editable="bottom">
+                                <field name="product_id" string="Producto"/>
+                                <field name="product_qty" string="Cantidad"/>
+                                <field name="product_uom" string="Unidad de medida"/>
+                                <field name="price_unit" string="Precio"/>
+                                <field name="price_subtotal"/>
+                                <control>
+                                    <create name="add_product" string="Agregar Producto"/>
+                                </control>
+                            </list>
+                        </field>                             
                     </sheet>                
                 </form>
             </field>
-        </record>       
-
+        </record>               
         <record id="view_purchas_acquisition_list" model="ir.ui.view">
             <field name="name">purchase.acquisition.list</field>
             <field name="model">purchase.acquisition</field>

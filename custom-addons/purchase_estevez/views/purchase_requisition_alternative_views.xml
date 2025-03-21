@@ -1,0 +1,25 @@
+<odoo>
+    <data>
+        <!-- Vista de lista para alternativas -->
+        <record id="view_purchase_requisition_alternative_tree" model="ir.ui.view">
+            <field name="name">purchase.requisition.alternative.tree</field>
+            <field name="model">purchase.requisition.alternative</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="requisition_id" string="Solicitud Original"/>
+                    <field name="partner_id" string="Proveedor"/>
+                    <field name="product_id" string="Producto"/>
+                    <field name="price_unit" string="Precio Unitario"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Acción para abrir la vista de alternativas -->
+        <record id="action_view_purchase_requisition_alternatives" model="ir.actions.act_window">
+            <field name="name">Alternativas de Cotización</field>
+            <field name="res_model">purchase.requisition.alternative</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_purchase_requisition_alternative_tree"/>
+        </record>
+    </data>
+</odoo>
