@@ -6,6 +6,37 @@
         <field name="model">hr.contract</field>
         <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
         <field name="arch" type="xml">
+            <!-- Add a new "Guardar" button in the header -->
+            <xpath expr="//header" position="inside">
+
+                <button type="object"
+                        string="Guardar"
+                        class="btn-primary"
+                        icon="fa-save"
+                        name="action_save"/>
+
+                <button name="%(action_report_hr_contract_addendum)d"
+                        type="action"
+                        string="Addendum"
+                        class="btn-primary"
+                        icon="fa-file-pdf-o"/>
+
+                <button name="%(action_report_hr_contract)d"
+                        type="action"
+                        string="Generar Contrato"
+                        class="btn-primary"
+                        icon="fa-file-pdf-o"/>
+
+                <button type="object"
+                        string="Cancelar Contrato"
+                        class="btn-danger"
+                        icon="fa-ban"
+                        name="action_cancel_contract"
+                        confirm="¿Está seguro de que desea cancelar el contrato actual?"
+                        invisible="state == 'cancel'"/>
+
+            </xpath>
+
             <!-- Columna de la izquierda -->
             <xpath expr="//group/group[@name='top_info_left']" position="replace">
                 <group>
@@ -42,12 +73,27 @@
                 </group>
             </xpath>
 
+            <!-- Hide Salary Information page -->
+            <xpath expr="//notebook/page[@name='information']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <!-- Nuevas páginas -->
             <xpath expr="//notebook/page[@name='other']" position="after">
                 <page name="documents" string="Contrato">
-                    <!-- Aquí puedes agregar los campos y contenido de la nueva página -->
                     <group>
-                        <!-- Agrega más campos según sea necesario -->
+                        <div class="card" style="width: 18rem; margin: 10px auto;">
+                            <div class="card-body text-center">
+                                <i class="fa fa-file-pdf-o fa-5x text-danger" invisible="not document_file" aria-hidden="true"></i>
+                                <i class="fa fa-clock-o fa-2x text-warning" invisible="document_file" aria-hidden="true"></i>
+                                <h5 class="card-title mt-3" invisible="not document_file">Contrato Adjunto</h5>
+                                <h5 class="card-title mt-3" invisible="document_file">Pendiente por Adjuntar...</h5>
+                                <i class="fa fa-check fa-2x text-success" invisible="not document_file"></i>
+
+                                <!-- Campo para adjuntar el archivo -->
+                                <field name="document_file" filename="document_filename" widget="binary" string="Adjuntar Archivo" class="mt-2"/>
+                            </div>
+                        </div>
                     </group>
                 </page>
             </xpath>
@@ -61,11 +107,13 @@
         <field name="model">hr.contract</field>
         <field name="inherit_id" ref="hr_contract.hr_contract_view_tree"/>
         <field name="arch" type="xml">
+
             <xpath expr="//field[@name='date_start']" position="after">
                 <field name="create_date" string="Fecha de Creación" optional="hide"/>
                 <field name="days_to_expiry" string="Días Vencimiento" optional="hide"/>
                 <field name="create_uid" string="Creado por" widget="many2one_avatar_user" optional="hide"/>
             </xpath>
+
         </field>
     </record>
 

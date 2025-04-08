@@ -22,15 +22,30 @@
 
     # always loaded
     'data': [
+        # Archivos de datos
         'security/ir.model.access.csv',
+
+        # Archivos de informes
+        'report/hr_employee_remision_report.xml',
+        'report/hr_employee_remision_report_templates.xml',
+        'report/hr_employee_convenio_salida_report.xml',
+        'report/hr_employee_convenio_salida_report_templates.xml',
+        'report/hr_employee_carta_patronal_report.xml',
+        'report/hr_employee_carta_patronal_report_templates.xml',
+        'report/hr_contract_addendum_report.xml',
+        'report/hr_contract_addendum_report_templates.xml',
+        'report/hr_contract_report.xml',
+        'report/hr_contract_report_templates.xml',
+
+        # Archivos de Vistas
         'views/hr_job_views.xml',
         'views/hr_direction_views.xml',
         'views/hr_department_views.xml',
         'views/hr_area_views.xml',
         'views/hr_employee_menu.xml',
         'views/hr_employee_views.xml',
-        'views/hr_contract_views.xml'
-        #"views/hr_partner_views.xml",
+        'views/hr_contract_views.xml',
+        'views/hr_memorandum_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
