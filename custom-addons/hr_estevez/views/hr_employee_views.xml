@@ -63,6 +63,12 @@
                             type="action"
                             class="oe_highlight"
                             icon="fa-file-pdf-o"/>
+
+                    <button name="action_download_employee_documents"
+                            string="Descargar Documentos"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-download"/>
                 </xpath>
 
                 <!-- Eliminar el grupo managers de su ubicación actual -->
@@ -222,8 +228,15 @@
 
                         <group>                            
                             <group string="Contacto de Emergencia">
-                                <field name="emergency_contact"/>
-                                <field name="emergency_phone" class="o_force_ltr"/>
+                                <!-- Primer contacto -->
+                                <field name="emergency_contact" string="Primer Contacto"/>
+                                <field name="emergency_contact_relationship" string="Parentesco del Primer Contacto"/>
+                                <field name="emergency_phone" class="o_force_ltr" string="Teléfono del Primer Contacto"/>
+
+                                <!-- Segundo contacto -->
+                                <field name="emergency_contact_2" string="Segundo Contacto"/>
+                                <field name="emergency_contact_relationship_2" string="Parentesco del Segundo Contacto"/>
+                                <field name="emergency_phone_2" class="o_force_ltr" string="Teléfono del Segundo Contacto"/>
                             </group>
 
                             <group string="Situación Familiar">

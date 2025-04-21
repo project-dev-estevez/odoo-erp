@@ -120,7 +120,7 @@
                                             <tr>
                                                 <th class="text-left"><strong>NACIONALIDAD</strong></th>
                                                 <td class="text-left">
-                                                    <t t-esc="doc.employee_id.country_id.name.upper()"/>
+                                                    <!-- <t t-esc="doc.employee_id.country_id.name.upper()"/> -->
                                                 </td>
                                             </tr>
                                             <tr>
@@ -225,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <div class="row mt-2">
+                            <div class="row mt-5">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
                                         <strong>SEGUNDA.</strong><span>EL PRESENTE CONTRATO REGIRÁ EN TODO TIEMPO Y LUGAR LO NO ESTIPULADO EN EL MISMO POR EL “REGLAMENTO” Y POR LO ESTABLECIDO EN “LA LEY”.</span>
@@ -305,7 +305,7 @@
                                 </div>
                             </div>
                             
-                            <div class="row mt-2">
+                            <div class="row mt-5">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
                                         <span>PARA EL CASO QUE EN EL NUEVO LUGAR DE PRESTACIÓN DE SERVICIOS QUE LE FUERA ASIGNADO SE MODIFICARA EL HORARIO DE LABORES, "EL TRABAJADOR" ACEPTA ALLANARSE A DICHA MODALIDAD, SIEMPRE Y CUANDO SEA CONFORME LO QUE ESTABLECE “LA LEY”.</span>
@@ -388,7 +388,7 @@
                             <div class="row mt-2">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
-                                        <span>DE ACUERDO A LO DISPUESTO POR EL ARTÍCULO 74 DE LA LEY FEDERAL DEL TRABAJO, SERÁN DÍAS DE DESCANSO OBLIGATORIO: EL 1 DE ENERO, EL PRIMER LUNES DE FEBRERO EN CONMEMORACIÓN DEL DIA DE PROMULGACIÓN DE LA CONSTITUCIÓN MEXICANA, EL TERCER LUNES DEL MES DE MARZO EN CONMEMORACIÓN </span>
+                                        <span>DE ACUERDO A LO DISPUESTO POR EL ARTÍCULO 74 DE LA LEY FEDERAL DEL TRABAJO, SERÁN DÍAS DE DESCANSO OBLIGATORIO: EL 1 DE ENERO, EL PRIMER LUNES DE FEBRERO EN CONMEMORACIÓN DEL DIA DE PROMULGACIÓN DE LA CONSTITUCIÓN MEXICANA, EL TERCER LUNES DEL MES DE MARZO EN CONMEMORACIÓN DEL NATALICIO DE BENITO JUAREZ, 1 DE MAYO, 16 DE SEPTIEMBRE, EL TERCER LUNES DEL MES DE NOVIEMBRE EN CONMEMORACIÓN DEL ANIVERSARIO DE LA REVOLUCION MEXICANA Y EL 1 DE DICIEMBRE DE CADA 6 AÑOS CUANDO CORRESPONDA A LA TRANSMISIÓN DEL PODER EJECUTIVO FEDERAL, EL 25 DE DICIEMBRE, EN LOS QUE SE OTORGARÁ DESCANSO A “EL TRABAJADOR” CON GOCE DE SUELDO. </span>
                                     </p>
                                 </div>
                             </div>
@@ -396,7 +396,7 @@
                             <div class="row mt-2">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
-                                        <span>DEL NATALICIO DE BENITO JUAREZ, 1 DE MAYO, 16 DE SEPTIEMBRE, EL TERCER LUNES DEL MES DE NOVIEMBRE EN CONMEMORACIÓN DEL ANIVERSARIO DE LA REVOLUCION MEXICANA Y EL 1 DE DICIEMBRE DE CADA 6 AÑOS CUANDO CORRESPONDA A LA TRANSMISIÓN DEL PODER EJECUTIVO FEDERAL, EL 25 DE DICIEMBRE, EN LOS QUE SE OTORGARÁ DESCANSO A “EL TRABAJADOR” CON GOCE DE SUELDO.</span>
+                                        <span></span>
                                     </p>
                                 </div>
                             </div>
@@ -409,7 +409,7 @@
                                 </div>
                             </div>
 
-                            <div class="row">
+                            <div class="row mt-2">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
                                         <strong>DECIMA SEGUNDA.</strong><span>CUANDO "EL TRABAJADOR" POR RAZONES ADMINISTRATIVAS TENGA QUE LABORAR EL DÍA DOMINGO, "EL PATRÓN" LE PAGARÁ, ADEMÁS DE SU SALARIO, 25% (VEINTICINCO POR CIENTO) COMO PRIMA DOMINICAL SOBRE EL SALARIO ORDINARIO DEVENGADO. INDEPENDIENTEMENTE DEL DÍA DE DESCANSO SEMANAL, AL QUE TENDRÁ DERECHO.</span>
@@ -417,7 +417,7 @@
                                 </div>
                             </div>
 
-                            <div class="row mt-5">
+                            <div class="row mt-2">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
                                         <strong>DÉCIMA TERCERA.</strong><span> "EL TRABAJADOR" TENDRÁ DERECHO A DISFRUTAR DE UN PERIODO ANUAL DE VACACIONES SEGÚN LO ESTABLECIDO EN EL ARTÍCULO 76 DE "LA LEY", TOMANDO EN CONSIDERACIÓN LA ANTIGÜEDAD DE “EL TRABAJADOR”, ASÍ COMO A DISFRUTAR DEL SALARIO EN DICHO PERIODO. DE IGUAL MODO RECIBIRÁ LA PRIMA VACACIONAL RESPECTIVA, EQUIVALENTE AL 25% DEL IMPORTE PAGADO POR CONCEPTO DE VACACIONES, LA CUAL LE SERA ENTREGADA QUINCE DIAS ANTES DE QUE COMIENZE SU PERIODO VACACIONAL.</span>
@@ -601,7 +601,7 @@
                                 </div>
                             </div>
 
-                            <div class="row mt-5">
+                            <div class="row mt-2">
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
                                         <strong>VIGESIMA SEPTIMA.</strong><span>“EN CUMPLIMIENTO A LO SEÑALADO POR LOS ARTÍCULOS 501 Y 25, AMBOS DE LA LEY, EN ESTE ACTO MANIFIESTO QUE SEÑALO COMO MI LEGITIMO BENEFICIARIO DE TODOS LOS BIENES, PRESTACIONES LEGALES, EXTRALEGALES, SALARIOS DEVENGADOS, INDEMNIZACIONES Y/O CUALQUIER OTRO CONCEPTO A QUE TENGA DERECHO O QUE HAYA GENERADO Y QUE POR LEY ME CORRESPONDA A : ___________________________________________ , PERSONA QUE EN MI AUSENCIA POR ALGUNA DE LAS CAUSAS PREVISTAS EN LOS PRECEPTOS SEÑALADOS, TIENE EL DERECHO DE RECLAMAR Y QUE SE LE PAGUEN LOS CONCEPTOS MENCIONADOS QUE POR LEY ME CORRESPONDAN, PERSONA QUE DEPENDE ECONÓMICAMENTE DE MÍ YA QUE YO ME ENCARGO DE SUFRAGAR TODOS LOS GASTOS QUE SE TIENEN EN LA CASA QUE HABITAMOS DE MANERA COMÚN, LO ANTERIOR PARA TODOS LOS EFECTOS LEGALES A QUE HAYA LUGAR.</span>
@@ -743,7 +743,7 @@
                                     <p><strong>“EL TRABAJADOR”</strong></p>
                                     <br/><br/><br/>
                                     <p>______________________________________________</p>
-                                    <p class="mb-1"><strong class="text-danger"><t t-esc="doc.employee_id.name.upper()" /></strong></p>
+                                    <p class="mb-1"><strong><t t-esc="doc.employee_id.name.upper()" /></strong></p>
                                 </div>
                             </div>
 
@@ -773,14 +773,6 @@
                                 <div class="col-12 text-justify">
                                     <p style="text-align: justify;">
                                         <span>LO ANTERIOR LO MANIFIESTO BAJO PROTESTA DE DECIR VERDAD, SABEDOR DE LAS SANCIONES QUE, EN CASO DE INFORMACIÓN FALSA Y ENGAÑOSA, ESTABLECEN PARA EL DELITO DE FRAUDE LOS ARTÍCULOS 386, 387, 388 Y 388 BIS DEL CÓDIGO PENAL FEDERAL.</span>
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="row mt-2">
-                                <div class="col-12 text-justify">
-                                    <p style="text-align: justify;">
-                                        <span>QUE SUS GENERALES SON LOS SIGUIENTES:</span>
                                     </p>
                                 </div>
                             </div>
@@ -837,7 +829,7 @@
 
                             <div class="row mt-2">
                                 <div class="col-12 text-justify">
-                                    <P>El suscripto de la presente es trabajador de la empresa ESTEVEZ.JOR SERVICIOS, S.A. DE C.V., toda vez que tiene celebrado individual del trabajo por tiempo CERO DIAS con esa empresa, mismo contrato que a la fecha se encuentra vigente.</P>
+                                    <p style="text-align: justify;">El suscripto de la presente es trabajador de la empresa ESTEVEZ.JOR SERVICIOS, S.A. DE C.V., toda vez que tiene celebrado individual del trabajo por tiempo CERO DIAS con esa empresa, mismo contrato que a la fecha se encuentra vigente.</p>
                                 </div>
                             </div>
 
@@ -861,13 +853,13 @@
 
                             <div class="row mt-5">
                                 <div class="col-12 text-center">
-                                    <strong><t t-esc="doc.employee_id.name.upper()"/> :</strong>
+                                    <strong><t t-esc="doc.employee_id.name.upper()"/></strong>
                                 </div>
                             </div>
 
-                            <div class="row mt-2">
+                            <div class="row mt-2" style="page-break-before: always;">
                                 <div class="col-12">
-                                    <div class="text-right" style="text-align: right;">
+                                    <div class="text-right" style="text-align: right; margin-top: 50px;">
                                         <strong class="font-weight-bold text-right">15 DE ABRIL DE 2025</strong>
                                     </div>
                                 </div>

@@ -1,6 +1,6 @@
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import re
 
 class HrEmployee(models.Model):
@@ -103,6 +103,13 @@ class HrEmployee(models.Model):
     vacation_period_ids = fields.One2many(
         'hr.vacation.period', 'employee_id', string="Periodos de Vacaciones"
     )
+
+    emergency_contact_relationship = fields.Char(string="Parentesco del Primer Contacto")
+    
+    # Campos para el segundo contacto de emergencia
+    emergency_contact_2 = fields.Char(string="Segundo Contacto")
+    emergency_contact_relationship_2 = fields.Char(string="Parentesco del Segundo Contacto")
+    emergency_phone_2 = fields.Char(string="Teléfono del Segundo Contacto")
 
     @api.depends('contract_ids.date_start', 'contract_ids.date_end', 'years_of_service')
     def generate_vacation_periods(self):
@@ -333,6 +340,16 @@ class HrEmployee(models.Model):
         if self.private_phone:
             self.private_phone = self._format_phone_number(self.private_phone)
 
+    @api.onchange('emergency_phone')
+    def _onchange_emergency_phone(self):
+        if self.emergency_phone:
+            self.emergency_phone = self._format_phone_number(self.emergency_phone)
+
+    @api.onchange('emergency_phone_2')
+    def _onchange_emergency_phone_2(self):
+        if self.emergency_phone_2:
+            self.emergency_phone_2 = self._format_phone_number(self.emergency_phone_2)
+
     def action_open_whatsapp(self):
         for employee in self:
             phone = employee.work_phone or employee.private_phone
@@ -365,46 +382,35 @@ class HrEmployee(models.Model):
             'context': {'default_res_model': 'hr.employee', 'default_res_id': self.id, 'create': True, 'edit': True},
         }
 
-        """Combina los documentos seleccionados en un solo PDF y lo descarga."""
-        self.ensure_one()
-        attachments = self.env['ir.attachment'].search([
-            ('res_model', '=', 'hr.employee'),
-            ('res_id', '=', self.id),
-            ('id', 'in', self.env.context.get('active_ids', []))
-        ])
+    def action_download_employee_documents(self):
+        """Genera un único PDF con todos los documentos del empleado."""
+        self.ensure_one()  # Asegúrate de que solo se procese un empleado a la vez
 
-        if not attachments:
-            raise UserError(_("No se seleccionaron documentos para combinar."))
-
-        merger = PdfMerger()
-        for attachment in attachments:
-            if attachment.mimetype != 'application/pdf':
-                raise UserError(_("El archivo '%s' no es un PDF.") % attachment.name)
-            pdf_data = base64.b64decode(attachment.datas)
-            merger.append(io.BytesIO(pdf_data))
-
-        # Crear el PDF combinado en memoria
-        combined_pdf = io.BytesIO()
-        merger.write(combined_pdf)
-        merger.close()
-        combined_pdf.seek(0)
-
-        # Codificar el PDF combinado en base64 para la descarga
-        combined_pdf_base64 = base64.b64encode(combined_pdf.read())
-        combined_pdf_name = f"Documentos_{self.name.replace(' ', '_')}.pdf"
-
-        # Crear un registro de adjunto temporal para la descarga
-        attachment = self.env['ir.attachment'].create({
-            'name': combined_pdf_name,
-            'type': 'binary',
-            'datas': combined_pdf_base64,
-            'res_model': 'hr.employee',
-            'res_id': self.id,
-            'mimetype': 'application/pdf',
-        })
-
+        # Redirigir al controlador para descargar el PDF
         return {
             'type': 'ir.actions.act_url',
-            'url': f'/web/content/{attachment.id}?download=true',
+            'url': f'/download/employee/documents/{self.id}',
             'target': 'self',
         }
+
+    def get_formatted_date_of_entry(self):
+        """Returns the earliest date_of_entry formatted in Spanish."""
+        for employee in self:
+            contracts = employee.contract_ids.filtered(lambda c: c.date_of_entry)
+            if contracts:
+                earliest_date = min(contracts.mapped('date_of_entry'))
+                return earliest_date.strftime('%d-%B-%Y').upper().replace(
+                    'JANUARY', 'ENERO').replace('FEBRUARY', 'FEBRERO').replace('MARCH', 'MARZO').replace(
+                    'APRIL', 'ABRIL').replace('MAY', 'MAYO').replace('JUNE', 'JUNIO').replace(
+                    'JULY', 'JULIO').replace('AUGUST', 'AGOSTO').replace('SEPTEMBER', 'SEPTIEMBRE').replace(
+                    'OCTOBER', 'OCTUBRE').replace('NOVEMBER', 'NOVIEMBRE').replace('DECEMBER', 'DICIEMBRE')
+            return 'N/A'
+        
+    def get_formatted_today_date(self):
+        """Returns today's date formatted in Spanish."""
+        today = datetime.today()
+        return today.strftime('%d de %B de %Y').upper().replace(
+            'JANUARY', 'ENERO').replace('FEBRUARY', 'FEBRERO').replace('MARCH', 'MARZO').replace(
+            'APRIL', 'ABRIL').replace('MAY', 'MAYO').replace('JUNE', 'JUNIO').replace(
+            'JULY', 'JULIO').replace('AUGUST', 'AGOSTO').replace('SEPTEMBER', 'SEPTIEMBRE').replace(
+            'OCTOBER', 'OCTUBRE').replace('NOVEMBER', 'NOVIEMBRE').replace('DECEMBER', 'DICIEMBRE')
