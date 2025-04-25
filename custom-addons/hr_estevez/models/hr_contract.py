@@ -147,4 +147,3 @@ class HrContract(models.Model):
         }
         current_month = datetime.now().strftime('%B')
         return months.get(current_month, current_month)
-    

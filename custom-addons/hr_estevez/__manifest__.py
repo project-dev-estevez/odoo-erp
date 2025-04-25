@@ -18,7 +18,7 @@
     'version': '0.2',
 
     # any module necessary for this one to work correctly
-    'depends': ['hr', 'hr_contract', 'stock', 'product', 'stock_estevez'],
+    'depends': ['hr', 'hr_contract'],
 
     # always loaded
     'data': [
@@ -36,8 +36,6 @@
         'report/hr_contract_addendum_report_templates.xml',
         'report/hr_contract_report.xml',
         'report/hr_contract_report_templates.xml',
-        'report/hr_employee_memorandum_report.xml',
-        'report/hr_employee_memorandum_report_templates.xml',
 
         # Archivos de Vistas
         'views/hr_job_views.xml',
