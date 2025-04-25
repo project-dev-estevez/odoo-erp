@@ -111,6 +111,28 @@ class HrEmployee(models.Model):
     emergency_contact_relationship_2 = fields.Char(string="Parentesco del Segundo Contacto")
     emergency_phone_2 = fields.Char(string="Teléfono del Segundo Contacto")
 
+    #Campos para asignaciones
+    asset_assignment_ids = fields.One2many(
+        'stock.assignment',
+        'recipient_id',
+        string='Activos Fijos',
+        domain=[('category_type', '=', 'asset')]
+    )
+    
+    tool_assignment_ids = fields.One2many(
+        'stock.assignment',
+        'recipient_id',
+        string='Herramientas',
+        domain=[('category_type', '=', 'tool')]
+    )
+    
+    consumable_assignment_ids = fields.One2many(
+        'stock.assignment',
+        'recipient_id',
+        string='Consumibles',
+        domain=[('category_type', '=', 'consumable')]
+    )
+
     @api.depends('contract_ids.date_start', 'contract_ids.date_end', 'years_of_service')
     def generate_vacation_periods(self):
         for employee in self:
@@ -414,3 +436,15 @@ class HrEmployee(models.Model):
             'APRIL', 'ABRIL').replace('MAY', 'MAYO').replace('JUNE', 'JUNIO').replace(
             'JULY', 'JULIO').replace('AUGUST', 'AGOSTO').replace('SEPTEMBER', 'SEPTIEMBRE').replace(
             'OCTOBER', 'OCTUBRE').replace('NOVEMBER', 'NOVIEMBRE').replace('DECEMBER', 'DICIEMBRE')
+    
+    def get_nationality(self):
+        translations = {
+            'Mexico': 'Mexicana',
+            'Colombia': 'Colombiana',
+            'Argentina': 'Argentina',
+            'España': 'Española',
+            # Agrega más traducciones según sea necesario
+        }
+        country_name = self.country_id.name
+        return translations.get(country_name, country_name)
+    
