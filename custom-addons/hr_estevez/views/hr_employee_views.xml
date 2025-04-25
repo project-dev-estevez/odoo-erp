@@ -265,9 +265,8 @@
                             <list>
                                 <field name="id" string="Código" readonly="1"/>
                                 <field name="create_date" string="Fecha de Creación" readonly="1"/>
-                                <field name="administrative_type" string="Tipo de Acta"/>
+                                <field name="description" string="Descripción"/>
                                 <field name="date" string="Fecha del Acta"/>
-                                <button name="download_memorandum_report" type="object" string="Reporte" class="btn-secondary fa fa-download"/>
                             </list>
                         </field>
                     </page>
@@ -310,134 +309,7 @@
 
                 <!-- Nueva página de Asignaciones -->
                 <xpath expr="//notebook/page[@name='permits']" position="after">
-                    <page name="assignments" string="Asignaciones">
-                        <notebook>
-                            <page name="almacen_general" string="Almacen General">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        <field name="tool_assignment_ids" 
-                                            view_id="stock_estevez.view_tool_assignment_tree"
-                                            colspan="6"/>
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-                                        <field name="consumable_assignment_ids" 
-                                            view_id="stock_estevez.view_consumable_assignment_tree"
-                                            colspan="6"/>
-                                    </page>    
-
-                                </notebook>
-
-                            </page>
-                            <page name="alto_costo" string="Alto Costo">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                            <page name="autos" string="Autos">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                            <page name="ehs" string="EHS">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                            <page name="insumos" string="Insumos">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                            <page name="refacciones" string="Refacciones">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                            <page name="sistemas" string="Sistemas">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                            <page name="area_medica" string="Área Médica">
-                                <notebook>
-                                    <page name="herramientas" string="herramientas">
-                                        
-                                    </page>
-
-                                    <page name="activo_fijo" string="Activo Fijo">
-                                    </page>
-
-                                    <page name="consumibles" string="Consumibles">
-
-                                    </page>    
-
-                                </notebook>
-                            </page>
-                        </notebook>
+                    <page name="assignments" string="Asignaciones" >
                     </page>
                 </xpath>
 
@@ -481,6 +353,6 @@
                 </xpath>
             </field>
         </record>
-        
+
     </data>
 </odoo>
