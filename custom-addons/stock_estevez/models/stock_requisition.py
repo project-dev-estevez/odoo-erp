@@ -247,7 +247,7 @@ class StockRequisition(models.Model):
         _logger.info("Message ID: %s", message_id)
 
     def action_confirm_approve(self):
-        self.ensure_one()
+        self_sudo = self.sudo()
         
         if self.state != 'to_approve_warehouse':
             raise exceptions.UserError("Solo se puede confirmar aprobación desde el estado 'Por Aprobar Almacen'")
