@@ -31,17 +31,24 @@
                 <!-- Botones del Header -->
                 <xpath expr="//header" position="inside">
                     <button name="action_archive_employee"
-                        string="Dar de baja" 
-                        type="object" 
-                        class="oe_highlight"
-                        invisible="not active"/>  <!-- Solo visible si active=True -->
+                            string="Dar de baja" 
+                            type="object" 
+                            class="btn-danger"
+                            invisible="not active"/>  <!-- Solo visible si active=True -->
                 </xpath>
                 <xpath expr="//header" position="inside">
+                    <button name="action_view_history"
+                            string="Historial Altas/Bajas"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-history"
+                            invisible="active"/>
+
                     <button name="action_reactivate_employee"
-                        string="Dar de alta"
-                        type="object"
-                        class="oe_highlight"
-                        invisible="active"/>  <!-- Solo visible si active=False -->
+                            string="Dar de alta"
+                            type="object"
+                            class="btn-success"
+                            invisible="active"/>  <!-- Solo visible si active=False -->
                 </xpath>
 
                 <!-- Botones en el header para reportes -->
@@ -250,7 +257,39 @@
 
                 <!-- Nueva página de Incapacidades -->
                 <xpath expr="//notebook/page[@name='personal_information']" position="after">
-                    <page name="disabilities" string="Incapacidades" >
+                    <page name="disabilities" string="Incapacidades">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped o_list_view">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Folio</th>
+                                        <th>Fecha Incidente</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                        <th>Días</th>
+                                        <th>Tipo</th>
+                                        <th>Comentarios</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td>
+                                            Botones de Acciones
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </page>
                 </xpath>
 
@@ -319,12 +358,87 @@
                                 </group>
                             </group>    
                         </group>
+
+                        <hr/>
+
+                        <group>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped o_list_view">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha Registro</th>
+                                            <th>Fecha Inicio</th>
+                                            <th>Fecha Termino</th>
+                                            <th>Días Solicitados</th>
+                                            <th>Goce de Sueldo</th>
+                                            <th>Comentarios</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>
+                                                Botones de Acciones
+                                                <!-- <div>
+                                                    <button type="button" class="btn btn-secondary btn-sm mb-1">
+                                                        Generar Reporte
+                                                    </button>
+                                                </div>
+                                                <div>
+                                                    <button type="button" class="btn btn-danger btn-sm">
+                                                        Cancelar Vacaciones
+                                                    </button>
+                                                </div> -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </group>
                     </page>
                 </xpath>
 
                 <!-- Nueva página de Permisos -->
                 <xpath expr="//notebook/page[@name='vacations']" position="after">
-                    <page name="permits" string="Permisos" >
+                    <page name="permits" string="Permisos">
+                        <group>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped o_list_view">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha Registro</th>
+                                            <th>Fecha Inicio</th>
+                                            <th>Fecha Termino</th>
+                                            <th>Días Solicitados</th>
+                                            <th>Goce de Sueldo</th>
+                                            <th>Comentarios</th>
+                                            <th>Tipo</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>--</td>
+                                            <td>
+                                                Botones de Acciones
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </group>
                     </page>
                 </xpath>
 
@@ -458,18 +572,6 @@
                                 </notebook>
                             </page>
                         </notebook>
-                    </page>
-                </xpath>
-
-                <!-- Nueva página de Incidencias -->
-                <xpath expr="//notebook/page[@name='assignments']" position="after">
-                    <page name="incidents" string="Incidencias" >
-                    </page>
-                </xpath>
-
-                <!-- Nueva página de Cursos -->
-                <xpath expr="//notebook/page[@name='incidents']" position="after">
-                    <page name="courses" string="Cursos" >
                     </page>
                 </xpath>
 

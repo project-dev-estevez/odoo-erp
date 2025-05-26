@@ -57,6 +57,9 @@
         'views/hr_contract_views.xml',
         'views/hr_memorandum_views.xml',
         'views/hr_loan_views.xml',
+        'views/hr_employee_archive_wizard_views.xml',
+        'views/hr_employee_reactivate_wizard_views.xml',
+        'views/hr_employee_history_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
