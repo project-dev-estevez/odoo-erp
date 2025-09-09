@@ -9,7 +9,8 @@ _logger = logging.getLogger(__name__)
 
 class HrApplicant(models.Model):
     _inherit = 'hr.applicant'
-
+    
+    
     is_examen_medico = fields.Boolean(compute="_compute_is_examen_medico")
 
     # *********Formulario de historia clinica *********
@@ -39,14 +40,28 @@ class HrApplicant(models.Model):
     ], string='Estado Civil', tracking=True)
     religion = fields.Char(string="Religión")
     housing_type = fields.Selection([('own', 'Propia'), ('rented', 'Rentada')], string="Tipo de Vivienda")
-    construction_material = fields.Selection([('durable', 'Durable'), ('non_durable', 'No Durable')], string="Material de Construcción")
-    housing_services = fields.Char(string="Servicios de Vivienda")
+    construction_material = fields.Selection([('durable', 'Durable'), ('non_durable', 'No Durable')], string="Material de Construcción", default='durable')
+    housing_services = fields.Selection([
+        ('intradomiciliarios', 'Intradomiciliarios'),
+        ('extradomiciliarios', 'Extradomiciliarios'),
+        ('intra_extradomiciliarios', 'Intra y Extradomiciliarios')
+    ], string="Servicios de Vivienda")
     weekly_clothing_change = fields.Char(string="Cambio de Ropa Semanal")
     occupations = fields.Text(string="Oficios Desempeñados")
     daily_teeth_brushing = fields.Integer(string="Cepillado de Dientes Diario")
     zoonosis = fields.Selection([('negative', 'Negativo'), ('positive', 'Positivo')], string="Zoonosis")
+    pet = fields.Char(string="Mascota", readonly=False)
+    
     overcrowding = fields.Selection([('negative', 'Negativo'), ('positive', 'Positivo')], string="Hacinamiento")
-    tattoos_piercings = fields.Char(string="Tatuajes y Perforaciones")
+    tattoos_piercings = fields.Selection(
+        [('negative', 'Negativo'), ('positive', 'Positivo')],
+        string="Tatuajes y Perforaciones"
+    )
+    tattoos_number = fields.Integer(
+        string="Número de Tatuajes",
+        readonly=False
+    )
+
     blood_type = fields.Char(string="Tipo de Sangre")
     donor = fields.Boolean(string="Donador")
 
@@ -153,11 +168,52 @@ class HrApplicant(models.Model):
         help='Proyecto para el que se postula el candidato'
     )
 
+    source_id = fields.Many2one(
+        'utm.source',        
+        required = True,
+        string='Fuente de reclutamiento',        
+        help='Fuente de reclutamiento',
+        ondelete='restrict'       
+    )
+
     process_duration = fields.Char(
         string='Duración',
         compute='_compute_process_duration',
         store=False
     )
+
+    # Sobrescribir el campo candidate_id para cambiar su etiqueta
+    candidate_id = fields.Many2one(
+        'hr.candidate', 
+        required=True, 
+        index=True,
+        string='Candidato',  # Cambiar el string que se muestra
+        help='Candidato asociado a esta solicitud'
+    )
+
+    # === NUEVO CAMPO PARA HISTORIAL ===
+    stage_history_ids = fields.One2many(
+        'hr.applicant.stage.history', 
+        'applicant_id', 
+        string='Historial de Etapas',
+        help='Historial completo de etapas por las que ha pasado el candidato'
+    )
+
+    first_name = fields.Char(string="Nombre(s)", required=True)    
+    last_name = fields.Char(string="Apellido Paterno", required=True)
+    mother_last_name = fields.Char(string="Apellido Materno", required=True)
+
+        
+
+    @api.onchange('zoonosis')
+    def _onchange_zoonosis(self):
+        if self.zoonosis != 'positive':
+            self.pet = False
+
+    @api.onchange('tattoos_piercings')
+    def _onchange_tattoos_piercings(self):
+        if self.tattoos_piercings != 'positive':
+            self.tattoos_number = False
 
     @api.depends('create_date', 'date_closed')
     def _compute_process_duration(self):
@@ -182,8 +238,68 @@ class HrApplicant(models.Model):
     @api.model
     def create(self, vals):
         if 'user_id' not in vals or not vals['user_id']:
-            vals['user_id'] = self.env.user.id  # Asigna el usuario logueado por defecto
-        return super(HrApplicant, self).create(vals)
+            vals['user_id'] = self.env.user.id  # Asigna el usuario logueado por defecto        
+        
+        # Crear el applicant
+        applicant = super(HrApplicant, self).create(vals)
+        
+        # === NUEVO: Crear historial inicial ===
+        if applicant.stage_id:
+            self.env['hr.applicant.stage.history'].create({
+                'applicant_id': applicant.id,
+                'stage_id': applicant.stage_id.id,
+                'enter_date': fields.Datetime.now(),
+            })
+        
+        return applicant
+        
+
+    def write(self, vals):              
+        # Validar si el postulante está bloqueado
+        if 'stage_id' in vals and any(applicant.kanban_state == 'blocked' for applicant in self):
+            raise UserError(_("El postulante está bloqueado y no puede avanzar en el proceso hasta que el bloqueo sea resuelto o eliminado manualmente por un usuario autorizado."))
+
+        # === NUEVO: Manejar cambios de etapa para historial ===
+        if 'stage_id' in vals and vals['stage_id']:
+            for applicant in self:
+                old_stage_id = applicant.stage_id.id if applicant.stage_id else False
+                new_stage_id = vals['stage_id']
+                
+                # Solo procesar si realmente cambió la etapa
+                if old_stage_id != new_stage_id:
+                    now = fields.Datetime.now()
+                    
+                    # 1. Si no tiene historial previo, crear registro para la etapa actual (antes del cambio)
+                    if not applicant.stage_history_ids and old_stage_id:
+                        self.env['hr.applicant.stage.history'].create({
+                            'applicant_id': applicant.id,
+                            'stage_id': old_stage_id,
+                            'enter_date': applicant.date_last_stage_update or applicant.create_date,
+                            'leave_date': now,
+                        })
+                    
+                    # 2. Cerrar la etapa anterior (si existe y tiene historial)
+                    elif old_stage_id:
+                        current_history = applicant.stage_history_ids.filtered(
+                            lambda h: h.stage_id.id == old_stage_id and not h.leave_date
+                        )
+                        if current_history:
+                            current_history.write({'leave_date': now})
+                    
+                    # 3. Crear nueva entrada de historial
+                    self.env['hr.applicant.stage.history'].create({
+                        'applicant_id': applicant.id,
+                        'stage_id': new_stage_id,
+                        'enter_date': now,
+                    })
+
+        # Preservar el reclutador (user_id) si no está en los valores
+        if 'user_id' not in vals:
+            for record in self:
+                if record.user_id:
+                    vals['user_id'] = record.user_id.id
+
+        return super(HrApplicant, self).write(vals)
     
     # Computed fields
     @api.depends('weight', 'height')
@@ -264,6 +380,14 @@ class HrApplicant(models.Model):
         if self.partner_phone:
             self.partner_phone = self._format_phone_number(self.partner_phone)
 
+    @api.onchange('candidate_id')
+    def _onchange_candidate_id_fill_info(self):
+        if self.candidate_id:            
+            self.phone = self.candidate_id.partner_phone            
+            self.source_id = self.candidate_id.source_id.id            
+            self.job_id = self.candidate_id.job_id.id           
+
+
     def action_open_whatsapp(self):
         for applicant in self:
             if applicant.partner_phone:
@@ -272,7 +396,7 @@ class HrApplicant(models.Model):
                 # Verificar si el número ya tiene un código de país
                 if not phone.startswith('52'):
                     phone = '52' + phone
-                message = "Hola"
+                message = "Hola! Queremos comunicarnos contigo!"
                 url = f"https://wa.me/{phone}?text={message}"
                 _logger.info(f"Opening WhatsApp with phone number: {phone}")
                 return {
@@ -324,19 +448,6 @@ class HrApplicant(models.Model):
             )
             _logger.info(f"Applicant {applicant.id} blocked and notified")
 
-    def write(self, vals):
-        # Validar si el postulante está bloqueado
-        if 'stage_id' in vals and any(applicant.kanban_state == 'blocked' for applicant in self):
-            raise UserError(_("El postulante está bloqueado y no puede avanzar en el proceso hasta que el bloqueo sea resuelto o eliminado manualmente por un usuario autorizado."))
-
-        # Preservar el reclutador (user_id) si no está en los valores
-        if 'user_id' not in vals:
-            for record in self:
-                if record.user_id:
-                    vals['user_id'] = record.user_id.id
-
-        return super(HrApplicant, self).write(vals)
-
     @api.depends('stage_id.name')
     def _compute_is_examen_medico(self):
         for record in self:
@@ -346,23 +457,92 @@ class HrApplicant(models.Model):
             else:
                 record.is_examen_medico = False
 
+    @api.depends('stage_id.sequence')
+    def _compute_is_driving_test(self):
+        for record in self:
+            if record.stage_id:
+                # ✅ Buscar la etapa "Prueba de Manejo" para obtener su sequence
+                driving_test_stage = self.env['hr.recruitment.stage'].search([
+                    ('name', 'ilike', 'prueba de manejo')
+                ], limit=1)
+                
+                if driving_test_stage:
+                    # ✅ Visible si está en "Prueba de Manejo" o en etapas posteriores (sequence mayor o igual)
+                    record.is_driving_test = record.stage_id.sequence >= driving_test_stage.sequence
+                else:
+                    record.is_driving_test = False
+            else:
+                record.is_driving_test = False
+
     def create_employee_from_applicant(self):
         self.ensure_one()
+
+        if not self.candidate_id:
+            raise UserError(_("No hay candidato asociado para crear el empleado."))
+        
+        # Obtener el objeto candidato
+        candidate = self.candidate_id
+
+        
+        
+        # Registrar información del aplicante para referencia
+        _logger.info("==== DATOS DEL APPLICANT ====")
+        _logger.info(f"Applicant ID: {self.id}")
+        _logger.info(f"Nombre: {self.first_name or ''} {self.last_name or ''} {self.mother_last_name or ''}")
         
         # Llamar al método original para crear el empleado
-        action = self.candidate_id.create_employee_from_candidate()
-        employee = self.env['hr.employee'].browse(action['res_id'])
+        action = candidate.create_employee_from_candidate()
+        employee = self.env['hr.employee'].browse(action.get('res_id'))
         
-        # Actualizar los datos del empleado con información del applicant
-        employee.write({
+        first_name = candidate.first_name or self.first_name or ''
+        last_name = candidate.last_name or self.last_name or ''
+        mother_last_name = candidate.mother_last_name or self.mother_last_name or ''
+
+        # Construye el nombre completo
+        full_name = f"{first_name} {last_name} {mother_last_name}".strip()
+
+        # Obtener valores desde el puesto (si existe)
+        job = self.job_id
+        direction_id = job.direction_id.id if job and job.direction_id else False
+        department_id = job.department_id.id if job and job.department_id else self.department_id.id
+        area_id = job.area_id.id if job and job.area_id else False
+            
+        employee_write_vals = {            
             'job_id': self.job_id.id,
             'job_title': self.job_id.name,
-            'department_id': self.department_id.id,
-            'work_email': self.department_id.company_id.email or self.email_from,  # Para tener un correo válido por defecto
-            'work_phone': self.department_id.company_id.phone,
-        })
+            'direction_id': direction_id,
+            'department_id': department_id,
+            'area_id': area_id,
+            'work_email': self.department_id.company_id.email or self.email_from or candidate.email,
+            'work_phone': self.department_id.company_id.phone or self.partner_phone or candidate.phone,                        
+            'project': self.project_id.name,
+            'name': full_name,
+            'names': first_name,
+            'last_name': last_name,
+            'mother_last_name': mother_last_name      
+        }
+        
+        # Registrar los valores que se escribirán en el empleado
+        _logger.info("==== VALORES PARA EL EMPLEADO ====")
+        for key, value in employee_write_vals.items():
+            _logger.info(f"  {key}: {value}")
+        
+        # Aplicar cambios al empleado
+        employee.write(employee_write_vals)
+        
+         # Transferir etiquetas/categorías (sin duplicados)
+        for appl_cat in self.categ_ids:
+            emp_cat = self.env['hr.employee.category'].search(
+                [('name', '=ilike', appl_cat.name.strip())], limit=1
+            )
+            if not emp_cat:
+                emp_cat = self.env['hr.employee.category'].create({
+                    'name': appl_cat.name.strip()
+                })
+            if emp_cat.id not in employee.category_ids.ids:
+                employee.write({'category_ids': [(4, emp_cat.id)]})
 
-        # Transferir documentos asociados al applicant al empleado
+        # Transferir attachments
         attachments = self.env['ir.attachment'].search([
             ('res_model', '=', 'hr.applicant'),
             ('res_id', '=', self.id)
@@ -373,4 +553,30 @@ class HrApplicant(models.Model):
                 'res_id': employee.id,
             })
 
+        # Logging para diagnóstico (opcional)
+        _logger.info(
+            "Empleado creado: names=%s last_name=%s mother_last_name=%s",
+            employee.name, employee.names, employee.last_name, employee.mother_last_name
+        )
+
         return action
+
+    def action_save(self):
+        self.ensure_one()
+
+        _logger.info("Mostrando vista lista + efecto rainbow_man")
+
+        return {
+            'effect': { 
+                'fadeout': 'slow',
+                'message': '¡Postulación registrada exitosamente!',
+                'type': 'rainbow_man',
+            },
+            'type': 'ir.actions.act_window',
+            'res_model': self._name, 
+            'view_mode': 'list',
+            'target': 'current',
+            
+        }
+
+    

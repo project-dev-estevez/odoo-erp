@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    
+<odoo>    
     <!-- Vista de lista para requisiciones -->
     <record id="view_hr_requisition_list" model="ir.ui.view">
         <field name="name">hr.requisition.list</field>
         <field name="model">hr.requisition</field>
         <field name="arch" type="xml">
             <list>
-                <field name="create_date" string="Fecha y Hora"/>
-                <field name="workstation_job_id"/>
-                <field name="workstation_area_id" string="Área" optional="show"/>
-                <field name="workstation_department_id" string="Departamento" optional="show"/>
-                <field name="number_of_vacancies" string="Vacantes" optional="show"/>
-                <field name="requestor_id" optional="show"/>
-                <field name="company_id" optional="hide"/>
+                <field name="create_date" string="Fecha de Solicitud" width="180"/>
+                <field name="workstation_job_id" width="180"/>
+                <field name="tag_ids" widget="many2many_tags" string="Etiquetas" optional="show" width="180"/>
+                <field name="workstation_area_id" string="Área" optional="show" width="180"/>
+                <field name="workstation_department_id" string="Departamento" optional="show" width="180"/>
+                <field name="number_of_vacancies" string="N° Vacantes" optional="show" width="180"/>
+                <field name="requestor_id" optional="show" width="180"/>
+                <field name="company_id" optional="hide" width="180"/>
                 <field name="requisition_type" optional="hide"/>
-                <field name="project_id" string="Proyecto" optional="show"/>
-                <field name="tag_ids" widget="many2many_tags" string="Etiquetas" optional="show"/>
-                <field name="state" 
+                <field name="project_id" string="Proyecto" optional="show" width="180"/>
+                <field name="publication_status" string="Estado Vacante" width="180"
+                       widget="badge"
+                       decoration-success="publication_status == 'Abierta'"
+                       decoration-danger="publication_status == 'Cerrada'"
+                       decoration-warning="publication_status == 'Por Abrir'"/>
+                <field name="state" string="Estado Requisición" width="180"
                        optional="show"
                        widget="badge" 
                        decoration-muted="state == 'to_approve'" 
@@ -27,14 +31,16 @@
                 <button name="action_approve" string="Aprobar" type="object" icon="fa-thumbs-up" invisible="state in ('rejected', 'first_approval', 'second_approval', 'approved') or requestor_id == uid"/>
                 <button name="action_confirm_approve" string="Confirmar" type="object" icon="fa-thumbs-up" invisible="state in ('to_approve', 'rejected', 'approved') or requestor_id == uid"/>
                 <button name="action_reject" string="Rechazar" type="object" icon="fa-times" invisible="state in ('rejected', 'approved') or requestor_id == uid"/>
+                <button name="action_reset_to_draft" string="Restablecer" type="object" icon="fa-refresh" invisible= "state not in ('approved','rejected')"/>
             </list>
         </field>
     </record>
 
+    <!-- Vista de formulario para requisiciones -->
     <record id="view_hr_requisition_form" model="ir.ui.view">
         <field name="name">hr.requisition.form</field>
         <field name="model">hr.requisition</field>
-        <field name="arch" type="xml">
+        <field name="arch" type="xml">               
             <form>
                 <header>
                     <button name="action_approve" string="Aprobar" type="object" class="btn-primary" invisible="state in ('rejected', 'first_approval', 'second_approval', 'approved') or requestor_id == uid"/>
@@ -46,10 +52,23 @@
                            decoration-primary="state == 'first_approval'" 
                            decoration-success="state == 'second_approval'" 
                            decoration-danger="state == 'rejected'"/>
-                </header>
 
+                    <!-- Botón Aperturar Vacante -->
+                    <button name="action_publish_vacancy" type="object" string="Aperturar Vacante"
+                        class="btn-primary"
+                        invisible="not (state == 'approved' and not is_published)"/>
+                    
+                    <button name="action_close_vacancy" type="object" string="Cerrar Vacante"
+                        class="btn-danger"
+                        invisible="not (state == 'approved' and is_published)"/>
+
+                    <button name="action_reset_to_draft" string="Restablecer" type="object"
+                        class="btn-secondary"
+                        invisible="state not in ('approved','rejected')"/>
+                </header>                
+        
                 <sheet>
-                    <h1>Requisición de Personal</h1>
+                    <h1>Requisición de Personal - <field name="workstation_job_id" readonly="1" nolabel="1" widget="label"/></h1>
                     
                     <!-- Barra de navegación mejorada -->
                     <div class="o_wizard_nav d-flex justify-content-between border-bottom mb-4">
@@ -63,13 +82,13 @@
                                       data-step="especificaciones">
                                     Especificaciones
                                 </span>
+              
                                 <!-- Indicador visible solo en el paso correspondiente -->
                                 <div class="step-indicator" invisible="wizard_step != 'especificaciones'"/>
                             </div>
                             
                             <!-- Separador visual -->
-                            <div class="nav-divider" style="flex: 0 0 20px;"></div>
-                            
+                            <div class="nav-divider" style="flex: 0 0 20px;"></div>                            
                             <!-- Pestaña 2: Datos del puesto -->
                             <div t-attf-class="nav-items #{wizard_step == 'datos_puesto' ? 'active-step' : ''}" 
                                  style="flex: 1; text-align: center; position: relative;">
@@ -77,7 +96,7 @@
                                 <span class="nav-links" 
                                       style="cursor: pointer; display: block; padding: 10px;"
                                       data-step="datos_puesto">
-                                    Datos del puesto
+                                    Descripción del puesto requerido
                                 </span>
                                 <div class="step-indicator" invisible="wizard_step != 'datos_puesto'"/>
                             </div>
@@ -103,25 +122,26 @@
                     <group>
                         <group>
                             <field name="requisition_number" readonly="1"/>
-                            <field name="requestor_id"/>
-                            <field name="company_id"/>
+                            <field name="requestor_id" options="{'no_open': True}" class="bg-light-grey"/>
+                            <field name="company_id" options="{'no_open': True}" class="bg-light-grey"/>
                         </group>
                         <group>
-                            <field name="direction_id"/>
-                            <field name="department_id"/>
-                            <field name="job_id"/>
+                            <field name="direction_id" options="{'no_open': True}" class="bg-light-grey"/>
+                            <field name="department_id" options="{'no_open': True}" class="bg-light-grey"/>
+                            <field name="job_id" options="{'no_open': True}" class="bg-light-grey"/>
                         </group>
                     </group>
+                    
                     
                     <!-- Paso 1: Especificaciones de Requisición -->
                     <div invisible="wizard_step != 'especificaciones'">
                         <group string="Especificaciones de Requisición">
                             <group>
-                                <group>
-                                    <field name="requisition_type"/>
-                                    <field name="employee_id" invisible="requisition_type != 'replacement'" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="vacancy_reason"/>
-                                    <field name="other_reason_description" invisible="vacancy_reason != 'other'"/>
+                                <group colspan="12" class="oe_wide">
+                                    <field name="requisition_type" class="custom-wide-field bg-light-grey"/>
+                                    <field name="employee_id" invisible="requisition_type != 'replacement'" options="{'no_quick_create': True, 'no_create_edit': True}" required="requisition_type == 'replacement'" class="bg-light-grey"/>
+                                    <field name="vacancy_reason" invisible="requisition_type != 'new_vacancy'" class="bg-light-grey"/>
+                                    <field name="other_reason_description" invisible="vacancy_reason != 'other'" class="bg-light-grey"/>
                                 </group>
                             </group>
                         </group>
@@ -129,35 +149,38 @@
                     
                     <!-- Paso 2: Datos del puesto -->
                     <div invisible="wizard_step != 'datos_puesto'">
-                        <group string="Datos del puesto">
+                        <group>
                             
-                                <group string="Información del Puesto">
-                                    <field name="job_type"/>
-                                    <field name="workstation_direction_id" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="workstation_department_id" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="workstation_area_id" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="workstation_job_id" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="tag_ids" widget="many2many_tags"/>
-                                    <field name="observations"/>
+                                <group string="Detalles del puesto">
+                                    <field name="job_type" class="bg-light-grey"/>
+                                    <field name="workstation_direction_id" class="bg-light-grey" options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                                    <field name="workstation_department_id" class="bg-light-grey" options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                                    <field name="workstation_area_id" class="bg-light-grey" options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                                    <field name="workstation_job_id" class="bg-light-grey" options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                                    <field name="tag_ids" class="bg-light-grey" widget="many2many_tags"/>
+                                    <field name="observations" class="bg-light-grey"/>
                                 </group>
                                 <group string="Información General">
-                                    <field name="project_id" options="{'no_create': True}"/>
-                                    <field name="number_of_vacancies"/>
-                                    <field name="work_schedule" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="gender"/>
-                                    <div class="row">
-                                        <span class="col-form-label col-3"><strong>Rango de edad</strong></span>
-                                        <div class="col-4">
-                                            <field name="age_range_min"/><span> Entre</span>
+                                    <field name="project_id" options="{'no_create': True}" class="bg-light-grey"/>
+                                    <field name="number_of_vacancies" class="bg-light-grey"/>
+                                    <field name="work_schedule" options="{'no_quick_create': True, 'no_create_edit': True}" class="bg-light-grey"/>
+                                    <field name="gender" class="bg-light-grey"/>                                
+                                    <div class="row align-items-center">
+                                        <div class="col-3 o_form_label">
+                                            <span style="color: #212529; font-weight: 500;" title="Especifica la edad mínima y máxima requerida para el puesto.">Rango de edad</span>
                                         </div>
-                                        <div class="col-5">
-                                            <field name="age_range_max"/><span>Y Años</span>
-                                        </div> 
+                                        <div class="col-9 d-flex align-items-center"> 
+                                            <span class="mr-2">De</span>
+                                            <field name="age_range_min" style="width: 55px; text-align: center; text-align-last: center; -moz-text-align-last: center;"/>     
+                                            <span>a</span>                                                                                   
+                                            <field name="age_range_max" style="width: 55px; text-align: center; text-align-last: center; -moz-text-align-last: center;"/>
+                                            <span>años</span>
+                                        </div>
                                     </div>
-                                    <field name="years_of_experience"/>
-                                    <field name="general_functions"/>
-                                    <field name="academic_degree_id" options="{'no_quick_create': True, 'no_create_edit': True}"/>
-                                    <field name="software_ids" widget="many2many_tags"/>
+                                    <field name="year_of_experience" class="bg-light-grey"/>
+                                    <field name="general_functions" class="bg-light-grey"/>
+                                    <field name="academic_degree_id" class="bg-light-grey" options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                                    <field name="software_ids" class="bg-light-grey" widget="many2many_tags"/>
                                 </group>
                             
                         </group>
@@ -167,11 +190,11 @@
                     <div invisible="wizard_step != 'equipo'">
                         <group string="Equipo requerido">
                             <group string="Información Sobre Equipo Requerido">
-                                <group>
+                                <group colspan="12" class="oe_wide">
                                     <field name="computer_equipment_required"/>
                                     <field name="cellular_equipment_required"/>
-                                    <field name="uniform_ids" widget="many2many_tags"/>
-                                    <field name="epp_ids" widget="many2many_tags"/>
+                                    <field name="uniform_ids" widget="many2many_tags" class="bg-light-grey"/>
+                                    <field name="epp_ids" widget="many2many_tags" class="bg-light-grey"/>
                                 </group>
                             </group>   
                         </group>
@@ -198,7 +221,7 @@
                                     class="btn-primary" 
                                     invisible="wizard_step == 'equipo'"/>
                                     
-                            <button name="action_save" type="object" string="Guardar"
+                            <button name="action_save" type="object" string="Guardar y Finalizar"
                                 class="btn-primary" 
                                 invisible="wizard_step != 'equipo'"
                                 confirm="¿Estás seguro de que deseas guardar la requisición?"
@@ -206,9 +229,23 @@
                         </div>
                     </div>
                 </sheet>
-                
-                <!-- Estilos mejorados para la barra de navegación -->
-                <style>
+                        
+           
+                    
+                  
+
+
+                     <style>
+                     /*Estilos para los campos */
+
+                    .bg-light-grey {
+                    background-color: #f8f9fa;
+                    padding: 8px;
+                    border-radius: 5px;
+                    box-shadow: inset 0 0 3px rgba(11,74,175,0.28);
+                    }
+
+                    /* Estilos para la barra de navegación */
                     .o_wizard_nav .nav-tabs {
                         display: flex;
                         justify-content: space-between;
@@ -281,16 +318,30 @@
                         margin-top: 30px;
                         padding-top: 20px;
                     }
+
+                    .o_searchview .o_searchview_facet .o_facet_values:empty {
+                        display: block !important;
+                        font-weight: bold !important;
+                        color: #7c7bad !important;
+                        padding: 4px 0 !important;
+                        background: transparent !important;
+                        border: none !important;
+                        margin-top: 8px;
+                    }
+
+                     /* Ocultar el botón "Guardar manual" */
+                    .o_form_button_save {
+                    display: none !important;
+                    }
+                 
                 </style>
+                
             </form>
         </field>
     </record>
 
-    <!-- Vista de formulario para requisiciones -->
-    
-
     <!-- Vista de search para requisiciones -->
-    <record id="view_hr_requisition_search" model="ir.ui.view">
+    <record id="hr_requisition_search" model="ir.ui.view">
         <field name="name">hr.requisition.search</field>
         <field name="model">hr.requisition</field>
         <field name="arch" type="xml">
@@ -300,21 +351,76 @@
                 <field name="company_id"/>
                 <field name="requisition_type"/>
                 <field name="state"/>
-                <separator/>
-                <filter name="filter_to_approve" string="Esperándome" domain="[('state', 'in', ['to_approve', 'first_approval'])]" />
+                <field name="publication_status"/>
+                <separator string="ESTADO REQUISICION"/>
+                 <!-- Estado de la Requisición -->
+                <filter name="filter_status" string="🚦ESTADO REQUISICION" domain="[]"/>
+                <filter name="state_to_approve" string="Por Aprobar" domain="[('state', '=', 'to_approve')]"/>
+                <filter name="state_first_approval" string="Primera Aprobación" domain="[('state', '=', 'first_approval')]"/>
+                <filter name="state_second_approval" string="Segunda Aprobación" domain="[('state', '=', 'second_approval')]"/>
+                <filter name="state_approved" string="Aprobadas" domain="[('state', '=', 'approved')]"/>
+                <filter name="state_rejected" string="Rechazadas" domain="[('state', '=', 'rejected')]"/>  
+
+                 <!-- Por Área -->         
+                <separator string="AREAS"/>               
+                <filter name="filter_area" string="🏗️AREAS" domain="[]"/>
+                    <filter name="filter_capacitacion" string="Capacitación y DO" domain="[('workstation_area_id.name', '=', 'Capacitación y DO')]"/>
+                    <filter name="filter_almacen_foraneo" string="Almacén Foráneo" domain="[('workstation_area_id.name', '=', 'Almacén Foráneo')]"/>
+                    <filter name="filter_taller" string="Taller" domain="[('workstation_area_id.name', '=', 'Taller')]"/>
+                    <filter name="filter_obra_civil" string="Obra Civil" domain="[('workstation_area_id.name', '=', 'Obra Civil')]"/>
+                    <filter name="filter_ehs" string="EHS" domain="[('workstation_area_id.name', '=', 'EHS')]"/>
+                    <filter name="filter_empalmes" string="Empalmes" domain="[('workstation_area_id.name', '=', 'Empalmes')]"/>
+                    <filter name="filter_atraccion_talento" string="Atracción de Talento" domain="[('workstation_area_id.name', '=', 'Atracción de Talento')]"/>                
+                    <filter name="filter_construccion" string="Construcción" domain="[('workstation_area_id.name', '=', 'Construcción')]"/>                                                        
+
+                <!-- Por Departamento -->       
+                <separator string="DEPARTAMENTO"/>             
+                <filter name="filter_departments" string="🏢DEPARTAMENTO" domain="[]"/>
+                    <filter name="filter_talento_humano" string="Talento Humano" domain="[('workstation_department_id.name', '=', 'Talento Humano')]"/>
+                    <filter name="filter_operaciones" string="Operaciones" domain="[('workstation_department_id.name', '=', 'Operaciones')]"/>
+                    <filter name="filter_obra_civil" string="Obra Civil" domain="[('workstation_department_id.name', '=', 'Obra Civil')]"/>
+                    <filter name="filter_juridico" string="Jurídico" domain="[('workstation_department_id.name', '=', 'Jurídico')]"/>
+                    <filter name="filter_calidad" string="Calidad" domain="[('workstation_department_id.name', '=', 'Calidad')]"/>
+                    <filter name="filter_almacen" string="Almacén" domain="[('workstation_department_id.name', '=', 'Almacén')]"/>
+                    <filter name="filter_admon_obra" string="Administración de Obra" domain="[('workstation_department_id.name', '=', 'Administración de Obra')]"/>
+                    <filter name="filter_control_vehicular" string="Control Vehicular" domain="[('workstation_department_id.name', '=', 'Control Vehicular')]"/>                                
+               
+               <!--Estado de la Vacante-->
+               <separator string="Vacante"/>   
+                <filter name="filter_vacante" string="🚦ESTADO VACANTE" domain="[]"/>                                                                          
+                    <filter name="filter_to_approve" string="Por Aprobar" domain="[('state','=','to_approve')]"/>
+                    <filter name="filter_vacancy_open" string="Aprobada" domain="[('state','=','approved')]"/>  
+                    <filter name="filter_in_progress" string="En Curso" domain="[('state','=','first_approval')]"/>
+                    <filter name="filter_rejected" string="Rechazadas" domain="[('state','=','rejected')]"/>
+
+                <!-- Por Proyecto -->
+                <separator string="Proyecto"/>   
+                <filter name="filter_proyecto" string="🛠️PROYECTO" domain="[]"/>
+                    <filter name="filter_proj_sinproyecto" string="Sin Proyecto" domain="[('project_id', '=', False)]"/>       
+                    <field name="project_id" string="Proyecto"/>                         
+
+                <!--Por solicitante -->
+                <!--separator string="solicitante"/>   
+                <filter name="filter_soli" string="👤SOLICITANTE" domain="[]"/>
+                    <filter string="Solicitante" name="filter_solicitante" context="{'group_by': 'requestor_id'}"/-->
+
+
+                <!-- Ultimo mes -->
+                <separator string="Fecha"/>   
+                <filter name="filter_date" string="📅FECHA" domain="[]"/>
+                    <filter name="last_month" string="Último mes" domain="[('create_date','>=', (context_today() - relativedelta(days=30)).strftime('%%Y-%%m-%%d'))]"/>                                                                                                   
+
+                <separator string="📊 AGRUPACIONES"/>
+
+                <!--Agrupaciones-->                
+                    <filter name="departamento" string="🏢 Departamento" context="{'group_by': 'workstation_department_id'}"/>
+                    <filter name="proyecto" string="🛠️ Proyecto" context="{'group_by': 'project_id'}"/>      
+                    <filter name="area" string="🏗️ Areas" context="{'group_by': 'workstation_area_id'}"/>
+                    <filter name="solicitante" string="👤 Solicitante" context="{'group_by': 'requestor_id'}"/>     
+                    <filter name="requi" string="🚦 Estatus Requisicion" context="{'group_by': 'state'}"/> 
+                    <filter name="vacante" string="🚦 Estatus Vacante" context="{'group_by': 'publication_status'}"/>                                                        
             </search>
         </field>
     </record>
 
-    <!-- Acción para abrir requisiciones -->
-    <record id="action_hr_requisition" model="ir.actions.act_window">
-        <field name="name">Requisiciones</field>
-        <field name="res_model">hr.requisition</field>
-        <field name="view_mode">list,form</field>
-        <field name="context">{'search_default_filter_to_approve': 1}</field>
-    </record>
-
-    <!-- Menú de requisiciones -->
-    <menuitem id="menu_hr_requisition_root" name="Requisición de Personal" sequence="1"/>
-    <menuitem id="menu_hr_requisition" name="Requisición de Personal" parent="hr_recruitment.menu_hr_recruitment_root" action="action_hr_requisition" sequence="1"/>
 </odoo>

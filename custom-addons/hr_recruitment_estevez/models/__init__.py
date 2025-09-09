@@ -3,7 +3,9 @@ from . import hr_requisition
 from . import hr_job
 from . import hr_requisition_uniform
 from . import hr_requisition_epp
+from . import hr_applicant_stage_history
 from . import hr_applicant
+from . import hr_applicant_stage_driving_test
 from . import hr_candidate
 from . import hr_requisition_software
 from . import hr_recruitment_degree
@@ -12,3 +14,5 @@ from . import ir_attachment
 from . import report
 from . import survey_survey
 from . import hr_candidate_custom
+from . import hr_employee
+from . import hr_candidates_new

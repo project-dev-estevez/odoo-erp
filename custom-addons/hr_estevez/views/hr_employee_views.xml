@@ -25,7 +25,7 @@
                 <!-- Botones del toolbar -->
                 <xpath expr="//div[@name='button_box']/button[last()]" position="after">
                     <button name="action_open_whatsapp" class="oe_stat_button" icon="fa-whatsapp" type="object" string="WhatsApp" invisible="not (work_phone or private_phone)"/>
-                    <button name="action_open_documents" class="oe_stat_button" icon="fa-file-text-o" type="object" string="Documentos" />
+                    <button name="action_open_employee_documents" class="oe_stat_button" icon="fa-file-text-o" type="object" string="Documentos" />
                 </xpath>
             
                 <!-- Botones del Header -->
@@ -112,14 +112,29 @@
                         <field name="job_id" domain="[('department_id', '=', department_id)]" invisible="not department_id" options="{'no_create': True}"/>
                         <field name="parent_id" string="Jefe Inmediato" options="{'no_create': True}"/>
                         <field name="coach_id" string="Instructor" options="{'no_create': True}"/>
+                        
                     </group>
                 </xpath>
+
+                <xpath expr="//group/group[field[@name='coach_id']]" position="after">
+                    <div class="d-flex justify-content-end w-100 mt-4">
+                        <button              
+                            name="action_save" 
+                            type="object" 
+                            string="Guardar"
+                            class="btn-primary"     
+                            confirm="¿Estás seguro de que deseas guardar un empleado nuevo?"
+                        />  
+                    </div>
+                </xpath>
+
 
                 <!-- Información Laboral -->
                 <xpath expr="//notebook/page[@name='public']" position="replace">
                     <page name="public" string="Información Laboral" >
                         <group string="Ubicación">
                             <group>
+                                <field name="employment_start_date"/>
                                 <field name="address_id" context="{'show_address': 1}" options="{'highlight_first_line': True, 'no_edit': True, 'no_create': True, 'no_open': True}" domain="[('is_company', '=', True)]"/>
                                 <field name="work_location_id" string="Ubicación Laboral" context="{'default_address_id': address_id}" placeholder="e.g. Building 2, Remote, etc."/>
                             </group>
@@ -332,73 +347,48 @@
                     </page>
                 </xpath>
 
+                <xpath expr="//notebook/page[@name='loans']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+
                 <!-- Nueva página de Vacaciones -->
                 <xpath expr="//notebook/page[@name='loans']" position="after">
                     <page name="vacations" string="Vacaciones">
                         <group>
-                            <group string="Detalle Vacaciones">
+                            <group string="Resumen Vacaciones">
                                 <field name="years_of_service" readonly="1"/>
                                 <field name="entitled_days" readonly="1"/>
                                 <field name="vacation_days_taken" readonly="1"/>
                                 <field name="vacation_days_available" readonly="1"/>
                             </group>
-                            <group string="Detalle Periodos">                            
-                                <field name="vacation_period_ids" widget="one2many_list" context="{'default_employee_id': id}" nolabel="1" readonly="1">
-                                    <list>
-                                        <field name="period" string="Periodo"/>
-                                        <field name="entitled_days" string="Con Derecho a"/>
-                                        <field name="days_taken" string="Disfrutados"/>
-                                        <field name="days_remaining" string="Restan"/>
-                                    </list>
-                                </field>
-                                <group>
-                                    <div class="d-flex justify-content-center">
-                                        <button name="generate_vacation_periods" type="object" icon="fa-refresh" class="oe_highlight"/>
-                                    </div>
-                                </group>
-                            </group>    
                         </group>
-
-                        <hr/>
-
-                        <group>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped o_list_view">
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha Registro</th>
-                                            <th>Fecha Inicio</th>
-                                            <th>Fecha Termino</th>
-                                            <th>Días Solicitados</th>
-                                            <th>Goce de Sueldo</th>
-                                            <th>Comentarios</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>--</td>
-                                            <td>--</td>
-                                            <td>--</td>
-                                            <td>--</td>
-                                            <td>--</td>
-                                            <td>--</td>
-                                            <td>
-                                                Botones de Acciones
-                                                <!-- <div>
-                                                    <button type="button" class="btn btn-secondary btn-sm mb-1">
-                                                        Generar Reporte
-                                                    </button>
-                                                </div>
-                                                <div>
-                                                    <button type="button" class="btn btn-danger btn-sm">
-                                                        Cancelar Vacaciones
-                                                    </button>
-                                                </div> -->
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        
+                        <group string="Periodos de Vacaciones">
+                            <!-- Usar colspan para expandir la tabla -->
+                            <field name="vacation_period_ids" 
+                                context="{'default_employee_id': id}"
+                                options="{'create': false}"
+                                colspan="4">
+                                <list deletable="false">
+                                    <field name="period" string="Periodo"/>
+                                    <field name="year_start" string="Inicio"/>
+                                    <field name="year_end" string="Fin"/>
+                                    <field name="entitled_days" string="Días Derecho"/>
+                                    <field name="days_taken" string="Días Tomados"/>
+                                    <field name="days_remaining" string="Días Restantes" 
+                                        decoration-success="days_remaining &gt; 0" 
+                                        decoration-warning="days_remaining == 0" 
+                                        decoration-danger="days_remaining &lt; 0"/>
+                                </list>
+                            </field>
+                            
+                            <div class="text-center" colspan="4">
+                                <button 
+                                    name="generate_vacation_periods" 
+                                    type="object" 
+                                    string="Generar Periodos" 
+                                    class="oe_highlight"/>
                             </div>
                         </group>
                     </page>

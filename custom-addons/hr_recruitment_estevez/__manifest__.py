@@ -9,10 +9,11 @@
     "website": "https://estevezjorinternacional.com",
     "category": "Human Resources",
     "version": "0.1",
-    "depends": ['base', 'hr', 'hr_estevez', 'hr_recruitment', 'project', 'survey', 'hr_recruitment_survey', 'utm'],
+    "depends": ['base', 'hr', 'hr_estevez', 'hr_recruitment', 'project', 'survey', 'hr_recruitment_survey', 'utm', 'hr_holidays'],
     "data": [
         # Archivos de seguridad
         "security/hr_recruitment_security.xml",
+        "security/hr_recruitment_driving_test_security.xml",
         "security/ir.model.access.csv",
         
         # Archivos de datos
@@ -27,21 +28,39 @@
         # Archivos de informes
         'report/hr_applicant_doctor_report.xml',
         'report/hr_applicant_doctor_report_templates.xml',
+        'report/hr_applicant_driving_test_report.xml',
+        'report/hr_applicant_driving_test_report_templates.xml',
         
         # Archivos de vistas
         'views/hr_applicant_document_views.xml',
         'views/hr_applicant_view_form_inherit.xml',
-        'views/hr_candidate_view_form_inherit.xml',
+        #'views/hr_candidate_view_form_inherit.xml',
+        'views/hr_applicant_view_tree_inherit.xml',
+        "views/hr_applicant_view_driving_test.xml",
+        "views/hr_recruitment_menu_views.xml",
         "views/hr_requisition_views.xml",
         "views/hr_applicant_view_list_general_report_inherit.xml",
         "views/hr_job_view_list_general_report_inherit.xml",
         "views/hr_applicant_view_search_inherit.xml",
         "views/hr_applicant_view_search_inherit.xml",        
-        "views/hr_candidate_custom_views.xml"
+        #"views/hr_candidate_custom_views.xml"
+        "views/hr_candidate_view_form.xml",
+        "views/hr_candidate_form_view_inherit_custom.xml",
+        "views/hr_job_views.xml",
+        'views/hr_applicant_tree_custom.xml',
+        'views/hr_candidate_view_list.xml',
+        'views/hr_applicant_rejected_list_views.xml',
+        'views/hr_applicant_hired_list_views.xml',
+        'views/hr_applicant_sources_dashboard_list.xml',
+        'views/hr_applicant_form_inherit.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'static/src/js/tabs_navigation.js',
+            'hr_recruitment_estevez/static/src/services/*.js',
+            'hr_recruitment_estevez/static/src/components/**/*.js',
+            'hr_recruitment_estevez/static/src/components/**/*.xml',
+            'hr_recruitment_estevez/static/src/components/**/*.scss',          
         ],
     },
     "installable": True,

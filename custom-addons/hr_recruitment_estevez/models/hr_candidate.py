@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 import logging
 import re
@@ -9,6 +9,75 @@ class HrCandidate(models.Model):
     _inherit = 'hr.candidate'
 
     rfc = fields.Char(string="RFC")
+    job_ids = fields.Many2many(
+        'hr.job',
+        string = 'Puesto de Trabajo'
+    )
+
+    job_id = fields.Many2one(
+        'hr.job',
+        string = 'Puesto de Trabajo'
+    )
+
+    source_id = fields.Many2one(
+        'utm.source',
+        string='Fuente de Reclutamiento'
+    )    
+
+    partner_id = fields.Many2one('res.partner', string="Contacto", required=False)
+      
+    def action_open_documents(self):
+        self.env['hr.applicant.document'].search([]).unlink()
+        docs = self.env['hr.applicant.document'].create_required_documents(self.id)
+
+        return {
+            'name': _('Documentos del Aplicante'),
+            'view_mode': 'kanban',
+            'res_model': 'hr.applicant.document',
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'context': {'create': False},
+            'views': [(self.env.ref('hr_recruitment_estevez.view_hr_applicant_documents_kanban').id, 'kanban')],  # Asegúrate de usar la vista correcta
+        }
+    
+    def action_open_whatsapp(self):
+        for applicant in self:
+            if applicant.partner_phone:
+                # Eliminar caracteres no numéricos
+                phone = re.sub(r'\D', '', applicant.partner_phone)
+                # Verificar si el número ya tiene un código de país
+                if not phone.startswith('52'):
+                    phone = '52' + phone
+                message = "Hola! Estoy interesado en tu perfil para una oportunidad laboral."
+                url = f"https://wa.me/{phone}?text={message}"
+                _logger.info(f"Opening WhatsApp with phone number: {phone}")
+                return {
+                    'type': 'ir.actions.act_url',
+                    'url': url,
+                    'target': 'new',
+                }
+            else:
+                raise UserError("The applicant does not have a phone number.")
+                
+    
+    def action_open_whatsapp(self):
+        for applicant in self:
+            if applicant.partner_phone:
+                # Eliminar caracteres no numéricos
+                phone = re.sub(r'\D', '', applicant.partner_phone)
+                # Verificar si el número ya tiene un código de país
+                if not phone.startswith('52'):
+                    phone = '52' + phone
+                message = "Hola, estoy interesado en tu perfil para una oportunidad laboral."
+                url = f"https://wa.me/{phone}?text={message}"
+                _logger.info(f"Opening WhatsApp with phone number: {phone}")
+                return {
+                    'type': 'ir.actions.act_url',
+                    'url': url,
+                    'target': 'new',
+                }
+            else:
+                raise UserError("The applicant does not have a phone number.")
 
     def _format_phone_number(self, phone_number):
         if phone_number and not phone_number.startswith('+52'):
@@ -20,24 +89,24 @@ class HrCandidate(models.Model):
         if self.partner_phone:
             self.partner_phone = self._format_phone_number(self.partner_phone)
 
-    def action_open_whatsapp(self):
-        for candidate in self:
-            if candidate.partner_phone:
+    #def action_open_whatsapp(self):
+        #for candidate in self:
+            #if candidate.partner_phone:
                 # Eliminar caracteres no numéricos
-                phone = re.sub(r'\D', '', candidate.partner_phone)
+                #phone = re.sub(r'\D', '', candidate.partner_phone)
                 # Verificar si el número ya tiene un código de país
-                if not phone.startswith('52'):
-                    phone = '52' + phone
-                message = "Hola"
-                url = f"https://wa.me/{phone}?text={message}"
-                _logger.info(f"Opening WhatsApp with phone number: {phone}")
-                return {
-                    'type': 'ir.actions.act_url',
-                    'url': url,
-                    'target': 'new',
-                }
-            else:
-                raise UserError("The candidate does not have a phone number.")      
+                #if not phone.startswith('52'):
+                    #phone = '52' + phone
+                #message = "Hola"
+                #url = f"https://wa.me/{phone}?text={message}"
+                #_logger.info(f"Opening WhatsApp with phone number: {phone}")
+                #return {
+                    #'type': 'ir.actions.act_url',
+                    #'url': url,
+                    #'target': 'new',
+                #}
+            #else:
+                #raise UserError("The candidate does not have a phone number.")      
 
     @api.model
     def create(self, vals):

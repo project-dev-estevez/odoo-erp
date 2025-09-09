@@ -18,7 +18,7 @@
     'version': '0.2',
 
     # any module necessary for this one to work correctly
-    'depends': ['hr', 'hr_contract', 'stock', 'product', 'stock_estevez'],
+    'depends': ['hr', 'hr_holidays', 'hr_contract', 'stock', 'product', 'stock_estevez'],
 
     # always loaded
     'data': [
@@ -48,6 +48,7 @@
         'data/cron_notify_expired_contracts.xml',
 
         # Archivos de Vistas
+        'views/hr_user_base_inherit_views.xml',
         'views/hr_job_views.xml',
         'views/hr_direction_views.xml',
         'views/hr_department_views.xml',
@@ -60,6 +61,8 @@
         'views/hr_employee_archive_wizard_views.xml',
         'views/hr_employee_reactivate_wizard_views.xml',
         'views/hr_employee_history_views.xml',
+        'views/hr_leave.xml',
+        'views/hr_leave_type_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
@@ -67,7 +70,8 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'hr_estevez/static/src/css/custom_styles.css',
+            'hr_estevez/static/src/components/**/*.js',
+            'hr_estevez/static/src/components/**/*.xml',
         ],
     },
 }

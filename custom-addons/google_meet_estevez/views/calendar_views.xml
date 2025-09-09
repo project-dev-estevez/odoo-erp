@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_calendar_event_form_inherit_meet" model="ir.ui.view">
+    <field name="name">calendar.event.form.inherit.meet</field>
+    <field name="model">calendar.event</field>
+    <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='location']" position="before">
+        <field name="is_google_meet"/>
+      </xpath>
+      
+      <xpath expr="//field[@name='location']" position="after">
+        <!-- Botón para generar Meet -->
+        <button
+            name="action_force_create_meet"
+            string="Generar Meet ahora"
+            type="object"
+            class="btn-primary"
+            invisible="meet_generation_state != 'pending' or not show_meet_button"/>
+        
+        <!-- Indicador de progreso -->
+        <div class="text-warning" invisible="meet_generation_state != 'processing'">
+          <i class="fa fa-spinner fa-spin"/> Generando enlace Meet...
+        </div>
+        
+        <!-- Mensaje de error -->
+        <div class="text-danger" invisible="meet_generation_state != 'failed'">
+          <i class="fa fa-warning"/> Error generando Meet. Intenta nuevamente.
+        </div>
+        
+        <!-- Campo de enlace -->
+        <field
+          name="videocall_location"
+          widget="url"
+          string="Enlace Meet"
+          readonly="1"
+          invisible="not videocall_location"
+        />
+      </xpath>
+    </field>
+  </record>
+</odoo>

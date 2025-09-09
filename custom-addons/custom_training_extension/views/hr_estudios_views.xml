@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_estudios" model="ir.actions.act_window">
+        <field name="name">Información</field>
+        <field name="res_model">hr.estudios</field>
+        <field name="view_mode">list</field>
+    </record>
+    
+    <record id="view_hr_estudios_list" model="ir.ui.view">
+        <field name="name">hr.estudios.list</field>
+        <field name="model">hr.estudios</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_estudios_form" model="ir.ui.view">
+        <field name="name">hr.estudios.form</field>
+        <field name="model">hr.estudios</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+</odoo>

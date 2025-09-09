@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import time
 import logging
 from contextlib import contextmanager
 from functools import wraps
@@ -20,6 +21,100 @@ from odoo.addons.google_account.models.google_service import TIMEOUT
 
 _logger = logging.getLogger(__name__)
 
+class CalendarEvent(models.Model):
+    _inherit = 'calendar.event'
+
+    # 1. Campo para controlar Google Meet
+    is_google_meet = fields.Boolean(
+        string="Usar Google Meet",
+        default=True,
+        help="Genera un enlace de Google Meet al sincronizar"
+    )
+
+    # 2. Método para forzar sincronización con Google Calendar
+    def _force_sync_to_google(self):
+        """Sincronización mejorada con Google Calendar"""
+        try:
+            # Forzar sincronización inmediata
+            self.env['calendar.event']._sync_google_calendar(self.env.user)
+            # Esperar y refrescar datos
+            time.sleep(3)
+            return self.search([('id', '=', self.id)], limit=1)
+        except Exception as e:
+            _logger.error("Error sincronizando con Google: %s", str(e))
+            raise UserError(_(
+                "Error de sincronización. Verifica:\n"
+                "1. Conexión a internet\n"
+                "2. Configuración de Google Calendar\n"
+                "3. Permisos de usuario"
+            ))
+
+    # 3. Método para crear Google Meet
+    def _create_google_meet(self):
+        if not self.is_google_meet or self.videocall_location or not self.google_id:
+            return False
+
+        service = GoogleCalendarService(self.env['google.service'])
+        event_data = {
+            'conferenceData': {
+                'createRequest': {
+                    'conferenceSolutionKey': {'type': 'hangoutsMeet'},
+                    'requestId': str(uuid.uuid4()),
+                }
+            }
+        }
+
+        try:
+            result = service.patch(
+                calendar_id='primary',
+                event_id=self.google_id,
+                body=event_data,
+                params={'conferenceDataVersion': 1}
+            )
+            meet_url = result.get('hangoutLink')
+            if meet_url:
+                self.write({'videocall_location': meet_url})
+                _logger.info("Google Meet creado: %s", meet_url)
+                return meet_url
+        except Exception as e:
+            _logger.exception("Error creando Google Meet: %s", str(e))
+        return False
+
+    # 4. Método manual para generación de Meet
+    def force_create_meet(self):
+        for event in self:
+            # Si no tiene google_id, forzar sincronización primero
+            if not event.google_id:
+                event = event._force_sync_to_google()
+
+                # Si después de sincronizar sigue sin google_id
+                if not event.google_id:
+                    raise UserError(_(
+                        "No se pudo sincronizar con Google Calendar. "
+                        "Verifica: \n"
+                        "1. Que el calendario esté configurado para sincronizar\n"
+                        "2. Que tengas conexión a internet\n"
+                        "3. Que la integración con Google esté activa"
+                    ))
+
+            # Crear Meet
+            meet_url = event._create_google_meet()
+            if meet_url:
+                # Recargar la vista
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'reload',
+                }
+            else:
+                raise UserError(_("Error generando Google Meet. Ver logs para más detalles."))
+
+    # 5. Sincronización automática mejorada
+    def _sync_odoo2google(self, google_service):
+        res = super()._sync_odoo2google(google_service)
+        if self.is_google_meet and self.google_id and not self.videocall_location:
+            # Intentar crear Meet después de sincronizar
+            self._create_google_meet()
+        return res
 
 # API requests are sent to Google Calendar after the current transaction ends.
 # This ensures changes are sent to Google only if they really happened in the Odoo database.

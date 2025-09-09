@@ -69,26 +69,61 @@ class GoogleService(models.AbstractModel):
 
     @api.model
     def _get_google_tokens(self, authorize_code, service, redirect_uri):
-        """ Call Google API to exchange authorization code against token, with POST request, to
-            not be redirected.
-        """
+        """ Call Google API to exchange authorization code against token """
         ICP = self.env['ir.config_parameter'].sudo()
-
         headers = {"content-type": "application/x-www-form-urlencoded"}
+    
+        # Construye la URL completa para depuración
+        full_redirect_uri = self.get_base_url() + '/google_account/authentication'
+        _logger.info("Google Auth - Redirect URI: %s", full_redirect_uri)
+        _logger.info("Google Auth - Using Client ID: %s", self._get_client_id(service))
+
         data = {
             'code': authorize_code,
             'client_id': self._get_client_id(service),
             'client_secret': _get_client_secret(ICP, service),
+            'redirect_uri': full_redirect_uri,  # Usa la URL completa
             'grant_type': 'authorization_code',
-            'redirect_uri': redirect_uri
+            'access_type': 'offline',
+            'prompt': 'consent'
         }
+
         try:
-            dummy, response, dummy = self._do_request(GOOGLE_TOKEN_ENDPOINT, params=data, headers=headers, method='POST', preuri='')
-            return response.get('access_token'), response.get('refresh_token'), response.get('expires_in')
+            # Registra los datos para depuración
+            _logger.debug("Sending to Google: %s", data)
+        
+            # Realiza la solicitud directamente con requests
+            response = requests.post(
+                'https://oauth2.googleapis.com/token',
+                data=data,
+                headers=headers,
+                timeout=10
+            )
+            response.raise_for_status()
+            token_data = response.json()
+        
+            _logger.info("Google token response: %s", token_data)
+        
+            return (
+                token_data.get('access_token'),
+                token_data.get('refresh_token'),
+                token_data.get('expires_in')
+            )
+        
         except requests.HTTPError as e:
-            _logger.error(e)
-            error_msg = _("Something went wrong during your token generation. Maybe your Authorization Code is invalid or already expired")
+            error_content = e.response.text if e.response else str(e)
+            _logger.error("Google Token Error [HTTP %s]: %s", 
+                        e.response.status_code if e.response else "N/A", 
+                        error_content)
+        
+            error_msg = _("Google authentication failed: %s") % error_content
             raise self.env['res.config.settings'].get_config_warning(error_msg)
+        
+        except Exception as e:
+            _logger.exception("Unexpected error during Google token exchange")
+            error_msg = _("Unexpected error: %s") % str(e)
+            raise self.env['res.config.settings'].get_config_warning(error_msg)
+
 
     @api.model
     def _do_request(self, uri, params=None, headers=None, method='POST', preuri=GOOGLE_API_BASE_URL, timeout=TIMEOUT):
